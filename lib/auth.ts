@@ -1,6 +1,6 @@
 import "server-only"
 import { query } from "./db"
-import type { User, UserRole } from "./types/database"
+import type { User, UserRole, DietType } from "./types/database"
 import { createAuditLog } from "./audit"
 import { createHash, randomBytes } from "crypto"
 
@@ -142,7 +142,7 @@ export async function registerUser(
         }
 
         try {
-            await query(`INSERT INTO profiles (user_id) VALUES ($1)`, [users[0].id])
+            await query(`INSERT INTO profiles (user_id, diet) VALUES ($1, 'nonveg')`, [users[0].id])
         } catch (profileError) {
             console.error("[WESMUN] Profile creation failed:", profileError)
         }
@@ -157,7 +157,8 @@ export async function registerUser(
 export async function createDataOnlyUser(
     email: string,
     name: string,
-    actorId: string
+    actorId: string,
+    diet: DietType = "nonveg"
 ): Promise<{ success: boolean; message: string; user?: any }> {
     try {
         const existingUsers = await query<User>(`SELECT * FROM users WHERE email = $1`, [email])
@@ -178,7 +179,7 @@ export async function createDataOnlyUser(
         }
 
         try {
-            await query(`INSERT INTO profiles (user_id) VALUES ($1)`, [users[0].id])
+            await query(`INSERT INTO profiles (user_id, diet) VALUES ($1, $2)`, [users[0].id, diet])
         } catch (profileError) {
             console.error("[WESMUN] Profile creation failed:", profileError)
         }

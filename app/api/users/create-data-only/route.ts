@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server"
 import {getCurrentUser} from "@/lib/session"
 import {createDataOnlyUser} from "@/lib/auth"
+import type {DietType} from "@/lib/types/database"
 
 export async function POST(request: Request) {
     try {
@@ -16,13 +17,13 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const {email, name} = body
+        const {email, name, diet} = body
 
         if (!email || !name) {
             return NextResponse.json({error: "Email and name are required"}, {status: 400})
         }
 
-        const result = await createDataOnlyUser(email, name, user.id)
+        const result = await createDataOnlyUser(email, name, user.id, (diet as DietType) || "nonveg")
 
         if (!result.success) {
             return NextResponse.json({error: result.message}, {status: 400})

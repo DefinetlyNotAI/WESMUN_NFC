@@ -54,7 +54,7 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
         setError(null)
         try {
             const response = await fetch(`/api/nfc/${uuid}`)
-            
+
             if (response.status === 404) {
                 setError("NFC UUID not found. Please check the code and try again.")
                 setUserData(null)
@@ -65,6 +65,14 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                 setError("Unauthorized access")
                 setUserData(null)
                 return
+            }
+
+            if (response.status === 307) {
+                const data = await response.json()
+                if (data.redirect && data.correctUuid) {
+                    window.location.href = `/nfc/${data.correctUuid}`
+                    return
+                }
             }
 
             if (!response.ok) {

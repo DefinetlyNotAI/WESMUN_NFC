@@ -6,9 +6,11 @@ import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Textarea} from "@/components/ui/textarea"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import { Loader2, Plus, AlertCircle, CheckCircle2, Copy } from 'lucide-react'
+import { Loader2, Plus, AlertCircle, CheckCircle2, Copy, Utensils } from 'lucide-react'
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import type {DietType} from "@/lib/types/database"
 
 interface CreatedUser {
     email: string
@@ -26,6 +28,7 @@ export function SecurityCreateUsers() {
     const [activeTab, setActiveTab] = useState("single")
     const [singleEmail, setSingleEmail] = useState("")
     const [singleName, setSingleName] = useState("")
+    const [singleDiet, setSingleDiet] = useState<DietType>("nonveg")
     const [bulkData, setBulkData] = useState("")
     const [loading, setLoading] = useState(false)
     const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([])
@@ -62,7 +65,8 @@ export function SecurityCreateUsers() {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     email: singleEmail.trim(),
-                    name: singleName.trim()
+                    name: singleName.trim(),
+                    diet: singleDiet
                 })
             })
 
@@ -81,6 +85,7 @@ export function SecurityCreateUsers() {
             }])
             setSingleEmail("")
             setSingleName("")
+            setSingleDiet("nonveg")
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error")
         } finally {
@@ -169,6 +174,7 @@ export function SecurityCreateUsers() {
 
                         <TabsContent value="single" className="space-y-4">
                             <div className="grid gap-4">
+                                {/* email */}
                                 <div className="grid gap-2">
                                     <Label htmlFor="single-email">Email Address</Label>
                                     <Input
@@ -181,6 +187,7 @@ export function SecurityCreateUsers() {
                                     />
                                 </div>
 
+                                {/* name */}
                                 <div className="grid gap-2">
                                     <Label htmlFor="single-name">Full Name</Label>
                                     <Input
@@ -192,6 +199,24 @@ export function SecurityCreateUsers() {
                                     />
                                 </div>
 
+                                {/* diet selector */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="single-diet" className="flex items-center gap-2">
+                                        <Utensils className="h-4 w-4"/>
+                                        Diet Preference
+                                    </Label>
+                                    <Select value={singleDiet} onValueChange={(value) => setSingleDiet(value as DietType)}>
+                                        <SelectTrigger id="single-diet">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="nonveg">Non-Vegetarian (Default)</SelectItem>
+                                            <SelectItem value="veg">Vegetarian</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* submit button */}
                                 <Button onClick={createSingleUser} disabled={loading} className="transition-all duration-200 hover:scale-105 active:scale-95">
                                     {loading ? (
                                         <>

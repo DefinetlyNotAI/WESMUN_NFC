@@ -15,6 +15,7 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
 
         const {uuid} = await params
 
+        // First, try to find by UUID
         const users = await query<User & { profile: Profile; nfc_link: NfcLink; role: Role }>(
             `SELECT u.*,
                     json_build_object(
@@ -50,7 +51,22 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
             [uuid],
         )
 
+        // If not found by UUID, check if the uuid parameter is actually a userId
         if (users.length === 0) {
+            const userIdCheck = await query<{ uuid: string }>(
+                `SELECT n.uuid FROM nfc_links n WHERE n.user_id = $1`,
+                [uuid]
+            )
+
+            if (userIdCheck.length > 0) {
+                // Found a UUID for this userId - return redirect info
+                return NextResponse.json({
+                    redirect: true,
+                    correctUuid: userIdCheck[0].uuid,
+                    message: "Incorrect UUID format - use the NFC UUID instead of user ID"
+                }, {status: 307}) // Temporary redirect
+            }
+
             return NextResponse.json({error: "NFC link not found"}, {status: 404})
         }
 
