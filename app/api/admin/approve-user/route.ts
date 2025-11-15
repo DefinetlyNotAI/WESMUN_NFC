@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
             message: `User ${approved ? "approved" : "rejected"} successfully`,
         })
     } catch (error) {
-        console.error("[v0] Approve user error:", error)
+        console.error("[WESMUN] Approve user error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

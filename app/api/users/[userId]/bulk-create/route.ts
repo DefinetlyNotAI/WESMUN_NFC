@@ -36,7 +36,7 @@ export async function POST(request: Request) {
             results
         })
     } catch (error) {
-        console.error("[v0] Bulk create users error:", error)
+        console.error("[WESMUN] Bulk create users error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

@@ -16,7 +16,7 @@ export async function POST() {
 
         return NextResponse.json({success: true, message: "Logged out successfully"})
     } catch (error) {
-        console.error("[v0] Logout error:", error)
+        console.error("[WESMUN] Logout error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

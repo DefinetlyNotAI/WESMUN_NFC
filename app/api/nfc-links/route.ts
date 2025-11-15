@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({uuid})
     } catch (error) {
-        console.error("[v0] Create NFC link error:", error)
+        console.error("[WESMUN] Create NFC link error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

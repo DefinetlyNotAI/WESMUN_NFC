@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest, {params}: { params: { uuid: st
 
         return NextResponse.json({success: true})
     } catch (error) {
-        console.error("[v0] Profile update error:", error)
+        console.error("[WESMUN] Profile update error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

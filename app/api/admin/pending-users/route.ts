@@ -29,7 +29,7 @@ export async function GET() {
 
         return NextResponse.json({users: pendingUsers})
     } catch (error) {
-        console.error("[v0] Get pending users error:", error)
+        console.error("[WESMUN] Get pending users error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

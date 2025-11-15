@@ -74,7 +74,7 @@ export function UsersView() {
             setUsers(data.users)
             setFilteredUsers(data.users)
         } catch (error) {
-            console.error("[v0] Failed to fetch users:", error)
+            console.error("[WESMUN] Failed to fetch users:", error)
         } finally {
             setLoading(false)
         }

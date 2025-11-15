@@ -35,7 +35,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({success: true, deleted: result.length, logIds: result.map((r: any) => r.id)})
     } catch (error) {
-        console.error("[v0] Bulk delete audit logs error:", error)
+        console.error("[WESMUN] Bulk delete audit logs error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

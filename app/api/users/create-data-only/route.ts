@@ -34,7 +34,7 @@ export async function POST(request: Request) {
             user: result.user
         })
     } catch (error) {
-        console.error("[v0] Create data-only user error:", error)
+        console.error("[WESMUN] Create data-only user error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

@@ -95,7 +95,7 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
 
         return NextResponse.json({success: true})
     } catch (error) {
-        console.error("[v0] Update user error:", error)
+        console.error("[WESMUN] Update user error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }
@@ -132,7 +132,7 @@ export async function DELETE(request: NextRequest, {params}: { params: { userId:
 
         return NextResponse.json({success: true})
     } catch (error) {
-        console.error("[v0] Delete user error:", error)
+        console.error("[WESMUN] Delete user error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

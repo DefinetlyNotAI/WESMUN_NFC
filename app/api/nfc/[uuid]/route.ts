@@ -85,7 +85,7 @@ export async function GET(request: NextRequest, {params}: { params: { uuid: stri
             nfc_link: targetUser.nfc_link,
         })
     } catch (error) {
-        console.error("[v0] NFC scan error:", error)
+        console.error("[WESMUN] NFC scan error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

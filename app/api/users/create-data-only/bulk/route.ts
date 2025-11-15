@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({results, success: true})
     } catch (error) {
-        console.error("[v0] Bulk create data-only user error:", error)
+        console.error("[WESMUN] Bulk create data-only user error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

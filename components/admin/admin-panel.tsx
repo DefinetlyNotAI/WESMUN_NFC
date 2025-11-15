@@ -91,7 +91,7 @@ export function AdminPanel() {
             setUsers(data.users)
             setFilteredUsers(data.users)
         } catch (error) {
-            console.error("[v0] Fetch users error:", error)
+            console.error("[WESMUN] Fetch users error:", error)
         } finally {
             setLoading(false)
         }

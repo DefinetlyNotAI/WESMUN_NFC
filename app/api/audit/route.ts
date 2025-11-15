@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({logs, total})
     } catch (error) {
-        console.error("[v0] Get audit logs error:", error)
+        console.error("[WESMUN] Get audit logs error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }

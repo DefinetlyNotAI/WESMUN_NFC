@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
             message: result.message,
         })
     } catch (error) {
-        console.error("[v0] Registration error:", error)
+        console.error("[WESMUN] Registration error:", error)
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }
