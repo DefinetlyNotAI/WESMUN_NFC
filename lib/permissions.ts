@@ -34,7 +34,7 @@ export const PERMISSIONS = {
         canUpdateDiet: false,
         canUpdateAllergens: false,
         canManageUsers: false,
-        canViewAuditLogs: true,
+        canViewAuditLogs: false,
         canApproveUsers: false,
     },
     admin: {
@@ -46,7 +46,7 @@ export const PERMISSIONS = {
         canUpdateDiet: true,
         canUpdateAllergens: true,
         canManageUsers: true,
-        canViewAuditLogs: true,
+        canViewAuditLogs: false,
         canApproveUsers: true,
     },
 } as const
