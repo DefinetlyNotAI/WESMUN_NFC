@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         }
 
         const results = await Promise.all(
-            users.map(async (userData: {email: string; name: string}) => {
+            users.map(async (userData: { email: string; name: string }) => {
                 const result = await createDataOnlyUser(userData.email, userData.name, user.id)
                 return {
                     email: userData.email,

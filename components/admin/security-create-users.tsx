@@ -8,7 +8,7 @@ import {Label} from "@/components/ui/label"
 import {Textarea} from "@/components/ui/textarea"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import { Loader2, Plus, AlertCircle, CheckCircle2, Copy, Utensils } from 'lucide-react'
+import {AlertCircle, CheckCircle2, Copy, Loader2, Plus, Utensils} from 'lucide-react'
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import type {DietType} from "@/lib/types/database"
 
@@ -163,7 +163,8 @@ export function SecurityCreateUsers() {
             <Card>
                 <CardHeader>
                     <CardTitle>Create Users</CardTitle>
-                    <CardDescription>Create data-only user accounts for attendees. These users cannot sign in but their data will be tracked.</CardDescription>
+                    <CardDescription>Create data-only user accounts for attendees. These users cannot sign in but their
+                        data will be tracked.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -205,9 +206,10 @@ export function SecurityCreateUsers() {
                                         <Utensils className="h-4 w-4"/>
                                         Diet Preference
                                     </Label>
-                                    <Select value={singleDiet} onValueChange={(value) => setSingleDiet(value as DietType)}>
+                                    <Select value={singleDiet}
+                                            onValueChange={(value) => setSingleDiet(value as DietType)}>
                                         <SelectTrigger id="single-diet">
-                                            <SelectValue />
+                                            <SelectValue/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="nonveg">Non-Vegetarian (Default)</SelectItem>
@@ -217,7 +219,8 @@ export function SecurityCreateUsers() {
                                 </div>
 
                                 {/* submit button */}
-                                <Button onClick={createSingleUser} disabled={loading} className="transition-all duration-200 hover:scale-105 active:scale-95">
+                                <Button onClick={createSingleUser} disabled={loading}
+                                        className="transition-all duration-200 hover:scale-105 active:scale-95">
                                     {loading ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
@@ -246,7 +249,8 @@ export function SecurityCreateUsers() {
                                 />
                             </div>
 
-                            <Button onClick={createBulkUsers} disabled={loading} className="transition-all duration-200 hover:scale-105 active:scale-95">
+                            <Button onClick={createBulkUsers} disabled={loading}
+                                    className="transition-all duration-200 hover:scale-105 active:scale-95">
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
@@ -306,7 +310,8 @@ export function SecurityCreateUsers() {
                                             }}
                                             className="transition-all duration-200 hover:scale-105 active:scale-95"
                                         >
-                                            <Copy className={`h-3 w-3 transition-colors ${copied === result.user.nfcUuid ? 'text-green-600' : ''}`}/>
+                                            <Copy
+                                                className={`h-3 w-3 transition-colors ${copied === result.user.nfcUuid ? 'text-green-600' : ''}`}/>
                                         </Button>
                                     )}
                                 </div>

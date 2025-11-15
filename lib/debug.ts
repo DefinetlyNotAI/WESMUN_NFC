@@ -1,4 +1,4 @@
-import type { UserRole } from "@/lib/types/database"
+import type {UserRole} from "@/lib/types/database"
 
 /**
  * Get the effective user role, taking debug mode into account.

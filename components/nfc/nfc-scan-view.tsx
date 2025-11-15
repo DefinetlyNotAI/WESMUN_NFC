@@ -6,7 +6,7 @@ import {Badge} from "@/components/ui/badge"
 import {Checkbox} from "@/components/ui/checkbox"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import { AlertTriangle, CheckCircle2, Loader2, User, Utensils, XCircle, Copy } from 'lucide-react'
+import {AlertTriangle, CheckCircle2, Copy, Loader2, User, Utensils, XCircle} from 'lucide-react'
 import {Button} from "@/components/ui/button"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import type {DietType, UserRole} from "@/lib/types/database"
@@ -254,7 +254,7 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                                         disabled={updating}
                                     >
                                         <SelectTrigger className="w-40 h-7">
-                                            <SelectValue />
+                                            <SelectValue/>
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="veg">Vegetarian</SelectItem>
@@ -320,8 +320,8 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                                 <p className="text-sm font-medium">NFC UUID</p>
                                 <p className="text-xs text-muted-foreground font-mono break-all">{uuid}</p>
                             </div>
-                            <Button 
-                                size="sm" 
+                            <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={copyUUID}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"

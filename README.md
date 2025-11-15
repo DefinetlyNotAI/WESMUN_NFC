@@ -1,6 +1,7 @@
 # MUN NFC Management System
 
-A comprehensive NFC-based user management system for Model United Nations events, built with Next.js, TypeScript, and PostgreSQL.
+A comprehensive NFC-based user management system for Model United Nations events, built with Next.js, TypeScript, and
+PostgreSQL.
 
 ## Features
 
@@ -72,19 +73,23 @@ The system uses five main tables:
 ## User Roles & Permissions
 
 ### User
+
 - View own profile
 - Wait for NFC card scanning at event
 
 ### Security
+
 - View all user profiles
 - Update bags_checked status
 - Mark attendance
 
 ### Overseer
+
 - View all user profiles (read-only)
 - View audit logs
 
 ### Admin
+
 - Full system access
 - Manage users and assign roles
 - Update all profile fields
@@ -95,9 +100,9 @@ The system uses five main tables:
 
 1. Each user gets a unique NFC card with URL: `https://domain.com/nfc/<UUID>`
 2. When scanned by authenticated staff:
-   - User profile is displayed
-   - Security/Admin can update bags_checked and attendance
-   - All actions are logged in audit trail
+    - User profile is displayed
+    - Security/Admin can update bags_checked and attendance
+    - All actions are logged in audit trail
 3. Unauthenticated scans return 204 No Content (security feature)
 
 ## API Routes
@@ -129,6 +134,7 @@ Deploy to Vercel with one click:
 4. Deploy
 
 The system will automatically:
+
 - Use Vercel's edge network
 - Enable HTTPS
 - Configure proper security headers

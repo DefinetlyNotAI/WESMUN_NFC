@@ -1,14 +1,14 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import {Button} from "@/components/ui/button"
+import {useRouter} from "next/navigation"
 
 export default function LogoutButton() {
     const router = useRouter()
 
     const handleLogout = async (e: React.FormEvent) => {
         e.preventDefault()
-        await fetch("/api/auth/logout", { method: "POST" })
+        await fetch("/api/auth/logout", {method: "POST"})
         router.push("/auth/signin")
     }
 

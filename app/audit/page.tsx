@@ -11,7 +11,7 @@ export default async function AuditPage() {
 
     // Only emergency admin can access audit logs
     const isEmergencyAdmin = user.email === process.env.NEXT_PUBLIC_EMERGENCY_ADMIN_EMAIL ||
-                             user.name === "Emergency Admin"
+        user.name === "Emergency Admin"
 
     if (!isEmergencyAdmin) {
         redirect("/")

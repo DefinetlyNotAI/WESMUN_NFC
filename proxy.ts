@@ -1,11 +1,11 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import type {NextRequest} from "next/server";
+import {NextResponse} from "next/server";
 
 // List of protected paths
 const protectedPaths = ["/admin", "/users", "/audit", "/scan"];
 
 export function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+    const {pathname} = request.nextUrl;
 
     // HTTPS redirect in production
     if (

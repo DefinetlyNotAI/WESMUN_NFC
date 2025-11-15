@@ -1,14 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
+import {useEffect, useState} from "react"
+import {Button} from "@/components/ui/button"
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
+import {ThemeToggle} from "@/components/ui/theme-toggle"
 import Link from "next/link"
 import LogoutButton from "@/components/auth/sign-out-handler"
-import { DebugMode } from "@/components/debug/debug-mode"
-import { getEffectiveRole } from "@/lib/debug"
-import type { UserRole } from "@/lib/types/database"
+import {DebugMode} from "@/components/debug/debug-mode"
+import {getEffectiveRole} from "@/lib/debug"
+import type {UserRole} from "@/lib/types/database"
 
 interface HomePageClientProps {
     user: {
@@ -19,7 +19,7 @@ interface HomePageClientProps {
     isEmergencyAdmin: boolean
 }
 
-export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) {
+export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
     const [effectiveRole, setEffectiveRole] = useState<UserRole>(user.role)
 
     useEffect(() => {
@@ -37,10 +37,10 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black p-4">
-            <DebugMode currentRole={user.role} isEmergencyAdmin={isEmergencyAdmin} />
+            <DebugMode currentRole={user.role} isEmergencyAdmin={isEmergencyAdmin}/>
 
             <div className="absolute top-4 right-4">
-                <ThemeToggle />
+                <ThemeToggle/>
             </div>
 
             <Card className="w-full max-w-2xl">
@@ -51,7 +51,8 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="rounded-lg border bg-blue-50 dark:bg-black p-4 text-sm text-blue-900 dark:text-blue-100">
+                    <div
+                        className="rounded-lg border bg-blue-50 dark:bg-black p-4 text-sm text-blue-900 dark:text-blue-100">
                         <p className="font-semibold">Secure Access</p>
                         <p className="mt-1">You are signed in with a @wesmun.com account. All actions are IP-logged for
                             security.</p>
@@ -90,7 +91,7 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
                             </Link>
                         )}
 
-                        <LogoutButton />
+                        <LogoutButton/>
                     </div>
 
                     <div className="rounded-lg border bg-slate-50 dark:bg-black p-4 text-sm">

@@ -1,8 +1,8 @@
 import "server-only"
-import { query } from "./db"
-import type { User, UserRole, DietType } from "./types/database"
-import { createAuditLog } from "./audit"
-import { createHash, randomBytes } from "crypto"
+import {query} from "./db"
+import type {DietType, User, UserRole} from "./types/database"
+import {createAuditLog} from "./audit"
+import {createHash, randomBytes} from "crypto"
 
 /* -------------------- PASSWORD & TOKEN HELPERS -------------------- */
 
@@ -72,7 +72,10 @@ export async function createSession(userId: string): Promise<string> {
     }
 }
 
-export async function validateSession(token: string): Promise<(User & { role_name: UserRole; password_hash: string }) | null> {
+export async function validateSession(token: string): Promise<(User & {
+    role_name: UserRole;
+    password_hash: string
+}) | null> {
     try {
         const tokenHash = hashSessionToken(token)
 
@@ -121,12 +124,12 @@ export async function registerUser(
 ): Promise<{ success: boolean; message: string }> {
     try {
         if (!isValidWesmunEmail(email)) {
-            return { success: false, message: "Only @wesmun.com email addresses are allowed" }
+            return {success: false, message: "Only @wesmun.com email addresses are allowed"}
         }
 
         const existingUsers = await query<User>(`SELECT * FROM users WHERE email = $1`, [email])
         if (existingUsers.length > 0) {
-            return { success: false, message: "User already exists" }
+            return {success: false, message: "User already exists"}
         }
 
         const passwordHash = hashPassword(password)
@@ -138,7 +141,7 @@ export async function registerUser(
         )
 
         if (users.length === 0) {
-            return { success: false, message: "User creation failed" }
+            return {success: false, message: "User creation failed"}
         }
 
         try {
@@ -147,10 +150,10 @@ export async function registerUser(
             console.error("[WESMUN] Profile creation failed:", profileError)
         }
 
-        return { success: true, message: "Registration successful. Awaiting admin approval." }
+        return {success: true, message: "Registration successful. Awaiting admin approval."}
     } catch (error) {
         console.error("[WESMUN] registerUser failed:", error)
-        return { success: false, message: "Registration failed due to internal error" }
+        return {success: false, message: "Registration failed due to internal error"}
     }
 }
 
@@ -163,7 +166,7 @@ export async function createDataOnlyUser(
     try {
         const existingUsers = await query<User>(`SELECT * FROM users WHERE email = $1`, [email])
         if (existingUsers.length > 0) {
-            return { success: false, message: "User already exists" }
+            return {success: false, message: "User already exists"}
         }
 
         // Data-only users don't have passwords and are pre-approved
@@ -175,7 +178,7 @@ export async function createDataOnlyUser(
         )
 
         if (users.length === 0) {
-            return { success: false, message: "User creation failed" }
+            return {success: false, message: "User creation failed"}
         }
 
         try {
@@ -196,7 +199,7 @@ export async function createDataOnlyUser(
             await createAuditLog({
                 actorId,
                 action: "create_data_only_user",
-                details: { email, name, userId: users[0].id },
+                details: {email, name, userId: users[0].id},
             })
         } catch (auditError) {
             console.error("[WESMUN] Audit log failed:", auditError)
@@ -214,7 +217,7 @@ export async function createDataOnlyUser(
         }
     } catch (error) {
         console.error("[WESMUN] createDataOnlyUser failed:", error)
-        return { success: false, message: "User creation failed due to internal error" }
+        return {success: false, message: "User creation failed due to internal error"}
     }
 }
 
@@ -273,7 +276,7 @@ export async function loginUser(
                             [created[0].id]
                         )
                     } else {
-                        return { success: false, message: "Emergency admin creation failed" }
+                        return {success: false, message: "Emergency admin creation failed"}
                     }
                 }
 
@@ -283,7 +286,7 @@ export async function loginUser(
                     await createAuditLog({
                         actorId: admin.id,
                         action: "emergency_admin_login",
-                        details: { email: admin.email },
+                        details: {email: admin.email},
                         ipAddress
                     })
                 } catch (auditError) {
@@ -294,21 +297,21 @@ export async function loginUser(
                     success: true,
                     token,
                     message: "Emergency admin login successful",
-                    user: { id: admin.id, email: admin.email, name: admin.name, role: admin.role_name }
+                    user: {id: admin.id, email: admin.email, name: admin.name, role: admin.role_name}
                 }
             } catch (adminError) {
                 console.error("[WESMUN] Emergency admin login flow failed:", adminError)
-                return { success: false, message: "Emergency admin login failed" }
+                return {success: false, message: "Emergency admin login failed"}
             }
         }
 
         if (!isValidWesmunEmail(email)) {
-            return { success: false, message: "Data-only accounts cannot sign in. Please contact your administrator." }
+            return {success: false, message: "Data-only accounts cannot sign in. Please contact your administrator."}
         }
 
         // Rate limit check
         try {
-            if (await checkRateLimit(email, 5, 15 * 60)) return { success: false, message: "Too many login attempts" }
+            if (await checkRateLimit(email, 5, 15 * 60)) return {success: false, message: "Too many login attempts"}
         } catch (rateError) {
             console.error("[WESMUN] Rate limit check failed:", rateError)
         }
@@ -322,21 +325,27 @@ export async function loginUser(
         )
 
         if (users.length === 0) {
-            try { await incrementRateLimit(email) } catch {}
-            return { success: false, message: "Invalid email or password" }
+            try {
+                await incrementRateLimit(email)
+            } catch {
+            }
+            return {success: false, message: "Invalid email or password"}
         }
 
         const user = users[0]
         if (!verifyPassword(password, user.password_hash)) {
-            try { await incrementRateLimit(email) } catch {}
-            return { success: false, message: "Invalid email or password" }
+            try {
+                await incrementRateLimit(email)
+            } catch {
+            }
+            return {success: false, message: "Invalid email or password"}
         }
 
-        if (user.approval_status !== "approved") return { success: false, message: "Your account is pending approval" }
+        if (user.approval_status !== "approved") return {success: false, message: "Your account is pending approval"}
 
         const token = await createSession(user.id)
         try {
-            await createAuditLog({ actorId: user.id, action: "user_login", details: { email: user.email }, ipAddress })
+            await createAuditLog({actorId: user.id, action: "user_login", details: {email: user.email}, ipAddress})
         } catch (auditError) {
             console.error("[WESMUN] User login audit log failed:", auditError)
         }
@@ -345,11 +354,11 @@ export async function loginUser(
             success: true,
             token,
             message: "Login successful",
-            user: { id: user.id, email: user.email, name: user.name, role: user.role_name }
+            user: {id: user.id, email: user.email, name: user.name, role: user.role_name}
         }
     } catch (error) {
         console.error("[WESMUN] Unexpected loginUser error:", error)
-        return { success: false, message: "An unexpected error occurred during login" }
+        return {success: false, message: "An unexpected error occurred during login"}
     }
 }
 

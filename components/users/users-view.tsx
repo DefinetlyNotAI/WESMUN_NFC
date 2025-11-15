@@ -9,14 +9,14 @@ import {
     AlertTriangle,
     ArrowLeft,
     CheckCircle2,
+    Copy,
+    Edit2,
+    Eye,
     Loader2,
+    RefreshCw,
     Search,
     Utensils,
-    XCircle,
-    Edit2,
-    RefreshCw,
-    Copy,
-    Eye
+    XCircle
 } from 'lucide-react'
 import Link from "next/link"
 import type {DietType, UserRole} from "@/lib/types/database"
@@ -99,7 +99,6 @@ export function UsersView() {
     }
 
 
-
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
@@ -115,13 +114,14 @@ export function UsersView() {
             <div className="container mx-auto max-w-6xl space-y-4">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                     <Link href="/">
-                        <Button variant="ghost" size="sm" className="transition-all duration-200 hover:scale-105 active:scale-95">
+                        <Button variant="ghost" size="sm"
+                                className="transition-all duration-200 hover:scale-105 active:scale-95">
                             <ArrowLeft className="mr-2 h-4 w-4"/>
                             Back to Dashboard
                         </Button>
                     </Link>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         size="sm"
                         onClick={fetchUsers}
                         disabled={loading}
@@ -180,20 +180,26 @@ export function UsersView() {
                                                             <>
                                                                 <div className="flex items-center gap-1.5 text-sm">
                                                                     {user.profile.bags_checked ? (
-                                                                        <CheckCircle2 className="h-4 w-4 text-green-600"/>
+                                                                        <CheckCircle2
+                                                                            className="h-4 w-4 text-green-600"/>
                                                                     ) : (
-                                                                        <XCircle className="h-4 w-4 text-muted-foreground"/>
+                                                                        <XCircle
+                                                                            className="h-4 w-4 text-muted-foreground"/>
                                                                     )}
-                                                                    <span className="text-muted-foreground">Bags Checked</span>
+                                                                    <span
+                                                                        className="text-muted-foreground">Bags Checked</span>
                                                                 </div>
 
                                                                 <div className="flex items-center gap-1.5 text-sm">
                                                                     {user.profile.attendance ? (
-                                                                        <CheckCircle2 className="h-4 w-4 text-green-600"/>
+                                                                        <CheckCircle2
+                                                                            className="h-4 w-4 text-green-600"/>
                                                                     ) : (
-                                                                        <XCircle className="h-4 w-4 text-muted-foreground"/>
+                                                                        <XCircle
+                                                                            className="h-4 w-4 text-muted-foreground"/>
                                                                     )}
-                                                                    <span className="text-muted-foreground">Attendance</span>
+                                                                    <span
+                                                                        className="text-muted-foreground">Attendance</span>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -254,7 +260,8 @@ export function UsersView() {
                                                             className="h-7 w-7 p-0 transition-all duration-200 hover:scale-105 active:scale-95"
                                                             title="Copy NFC link"
                                                         >
-                                                            <Copy className={`h-3 w-3 ${copiedUuid === user.id ? 'text-green-600' : ''}`}/>
+                                                            <Copy
+                                                                className={`h-3 w-3 ${copiedUuid === user.id ? 'text-green-600' : ''}`}/>
                                                         </Button>
                                                     </>
                                                 )}
