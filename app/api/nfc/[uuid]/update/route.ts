@@ -12,7 +12,7 @@ interface UpdateProfileRequest {
     allergens?: string
 }
 
-export async function PATCH(request: NextRequest, {params}: { params: { uuid: string } }) {
+export async function PATCH(request: NextRequest, {params}: { params: Promise<{ uuid: string }> }) {
     try {
         const user = await getCurrentUser()
 
@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest, {params}: { params: { uuid: st
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
 
-        const {uuid} = params
+        const {uuid} = await params
         const body: UpdateProfileRequest = await request.json()
 
         if (body.allergens && body.allergens.length > 500) {

@@ -26,10 +26,40 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
         }
 
         const {userId} = params
+
+        console.log("[WESMUN] Updating user:", userId)
+
+        // Check if the user exists
+        const existingUsers = await query<{ id: string }>("SELECT id FROM users WHERE id = $1", [userId])
+        if (existingUsers.length === 0) {
+            return NextResponse.json({error: "User not found"}, {status: 404})
+        }
+
         const body: UpdateUserRequest = await request.json()
+
+        console.log("[WESMUN] Update request body:", body)
 
         // Update role if provided
         if (body.role) {
+            // Check if the target user has a wesmun.com email
+            const targetUserData = await query<{ email: string }>(
+                "SELECT email FROM users WHERE id = $1",
+                [userId]
+            )
+
+            if (targetUserData.length === 0) {
+                return NextResponse.json({error: "User not found"}, {status: 404})
+            }
+
+            const isWesmunEmail = targetUserData[0].email.toLowerCase().endsWith("@wesmun.com")
+
+            if (!isWesmunEmail) {
+                return NextResponse.json(
+                    {error: "Role changes are only allowed for @wesmun.com email accounts"},
+                    {status: 403}
+                )
+            }
+
             const roles = await query<{ id: number }>("SELECT id FROM roles WHERE name = $1", [body.role])
 
             if (roles.length === 0) {
@@ -74,14 +104,29 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
         }
 
         if (profileUpdates.length > 0) {
-            profileValues.push(userId)
-            await query(
-                `UPDATE profiles
-                 SET ${profileUpdates.join(", ")},
-                     updated_at = NOW()
-                 WHERE user_id = $${paramIndex}`,
-                profileValues,
-            )
+            // Check if profile exists for this user
+            const existingProfiles = await query<{ id: string }>("SELECT id FROM profiles WHERE user_id = $1", [userId])
+
+            if (existingProfiles.length === 0) {
+                console.log("[WESMUN] No profile found for user, creating one...")
+                // Create profile if it doesn't exist
+                await query(
+                    "INSERT INTO profiles (user_id, diet, bags_checked, attendance, allergens) VALUES ($1, $2, $3, $4, $5)",
+                    [userId, body.diet || 'veg', body.bags_checked || false, body.attendance || false, body.allergens || null]
+                )
+            } else {
+                profileValues.push(userId)
+                const updateQuery = `UPDATE profiles
+                     SET ${profileUpdates.join(", ")},
+                         updated_at = NOW()
+                     WHERE user_id = $${paramIndex}`
+
+                console.log("[WESMUN] Executing profile update query:", updateQuery, profileValues)
+
+                const result = await query(updateQuery, profileValues)
+
+                console.log("[WESMUN] Profile update result:", result)
+            }
 
             await createAuditLog({
                 actorId: user.id,
@@ -93,6 +138,8 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
             })
         }
 
+        console.log("[WESMUN] User update successful")
+
         return NextResponse.json({success: true})
     } catch (error) {
         console.error("[WESMUN] Update user error:", error)
@@ -100,7 +147,7 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
     }
 }
 
-export async function DELETE(request: NextRequest, {params}: { params: { userId: string } }) {
+export async function DELETE(request: NextRequest, {params}: { params: Promise<{ userId: string }> }) {
     try {
         const user = await getCurrentUser()
 
@@ -112,7 +159,7 @@ export async function DELETE(request: NextRequest, {params}: { params: { userId:
             return NextResponse.json({error: "Forbidden"}, {status: 403})
         }
 
-        const {userId} = params
+        const {userId} = await params
 
         // Prevent self-deletion
         if (userId === user.id) {

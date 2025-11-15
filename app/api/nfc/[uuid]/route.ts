@@ -4,7 +4,7 @@ import {query} from "@/lib/db"
 import {createAuditLog} from "@/lib/audit"
 import type {NfcLink, Profile, Role, User} from "@/lib/types/database"
 
-export async function GET(request: NextRequest, {params}: { params: { uuid: string } }) {
+export async function GET(request: NextRequest, {params}: { params: Promise<{ uuid: string }> }) {
     try {
         const user = await getCurrentUser()
 

@@ -1,18 +1,12 @@
 "use client"
 
-import {useState} from "react"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+import {useEffect, useState} from "react"
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button"
 import {Label} from "@/components/ui/label"
 import {Badge} from "@/components/ui/badge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import { Loader2 } from 'lucide-react'
+import {Loader2} from 'lucide-react'
 import type {DietType, UserRole} from "@/lib/types/database"
 
 interface User {
@@ -38,36 +32,60 @@ interface UserEditDialogProps {
 }
 
 export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialogProps) {
-    const [diet, setDiet] = useState<DietType>(user?.profile.diet === "veg" ? "veg" : "nonveg")
-    const [bagsChecked, setBagsChecked] = useState(user?.profile.bags_checked ?? false)
-    const [attendance, setAttendance] = useState(user?.profile.attendance ?? false)
+    const [diet, setDiet] = useState<DietType>("veg")
+    const [bagsChecked, setBagsChecked] = useState(false)
+    const [attendance, setAttendance] = useState(false)
+    const [role, setRole] = useState<UserRole>("user")
     const [loading, setLoading] = useState(false)
+
+    // Check if user has wesmun.com email
+    const canChangeRole = user?.email.toLowerCase().endsWith("@wesmun.com") ?? false
+
+    // Update state when user changes
+    useEffect(() => {
+        if (user) {
+            setDiet(user.profile.diet === "veg" ? "veg" : "nonveg")
+            setBagsChecked(user.profile.bags_checked ?? false)
+            setAttendance(user.profile.attendance ?? false)
+            setRole(user.role.name)
+        }
+    }, [user])
 
     const handleSave = async () => {
         if (!user) return
 
         setLoading(true)
         try {
+            const updateData: any = {
+                diet,
+                bags_checked: bagsChecked,
+                attendance
+            }
+
+            // Only include role if user has wesmun.com email
+            if (canChangeRole) {
+                updateData.role = role
+            }
+
             const response = await fetch(`/api/users/${user.id}`, {
                 method: "PATCH",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    diet,
-                    bags_checked: bagsChecked,
-                    attendance
-                })
+                body: JSON.stringify(updateData)
             })
 
             if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                const errorMessage = errorData.error || `Failed to update user (${response.status})`
                 // noinspection ExceptionCaughtLocallyJS
-                throw new Error("Failed to update user")
+                throw new Error(errorMessage)
             }
 
             onOpenChange(false)
             if (onSave) await onSave()
         } catch (error) {
             console.error("Error updating user:", error)
-            alert("Failed to update user")
+            const errorMessage = error instanceof Error ? error.message : "Failed to update user"
+            alert(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -97,6 +115,34 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                             </div>
                         </div>
                     </div>
+
+                    {canChangeRole && (
+                        <div className="space-y-2">
+                            <Label htmlFor="role">Role</Label>
+                            <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                                <SelectTrigger id="role">
+                                    <SelectValue/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="user">User</SelectItem>
+                                    <SelectItem value="security">Security</SelectItem>
+                                    <SelectItem value="overseer">Overseer</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                                Role changes available for @wesmun.com accounts only
+                            </p>
+                        </div>
+                    )}
+
+                    {!canChangeRole && (
+                        <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-900 p-3">
+                            <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                                ⓘ Role changes are restricted to @wesmun.com email accounts
+                            </p>
+                        </div>
+                    )}
 
                     <div className="space-y-2">
                         <Label htmlFor="diet">Diet Preference</Label>
