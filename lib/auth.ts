@@ -162,7 +162,7 @@ export async function isEmergencyAdminCredentials(email: string, password: strin
         const emergencyPassword = process.env.EMERGENCY_ADMIN_PASSWORD
         if (!emergencyUsername || !emergencyPassword) return false
 
-        const validEmail = email.toLowerCase() === `${emergencyUsername}@wesmun.com`
+        const validEmail = email.toLowerCase() === `${emergencyUsername}`
         const validPassword = password === emergencyPassword
 
         return validEmail && validPassword
@@ -183,7 +183,7 @@ export async function loginUser(
         // Emergency admin first
         if (await isEmergencyAdminCredentials(email, password)) {
             try {
-                const adminEmail = `${process.env.EMERGENCY_ADMIN_USERNAME}@wesmun.com`
+                const adminEmail = `${process.env.EMERGENCY_ADMIN_USERNAME}`
                 let adminUsers = await query<User & { role_name: UserRole; password_hash: string }>(
                     `SELECT u.*, r.name as role_name
                      FROM users u
