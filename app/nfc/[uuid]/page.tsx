@@ -14,6 +14,12 @@ export default async function NfcPage({params}: NfcPageProps) {
     if (!user) {
         redirect("/auth/signin")
     }
+
+    // Only admin, overseer, and security can access NFC pages
+    if (user.role !== "admin" && user.role !== "overseer" && user.role !== "security") {
+        redirect("/")
+    }
+
     const {uuid} = await params
 
     return <NfcScanView uuid={uuid} userRole={user.role}/>

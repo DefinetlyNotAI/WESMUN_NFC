@@ -8,7 +8,7 @@ export default async function HomePage() {
         redirect("/auth/signin")
     }
 
-    const isEmergencyAdmin = user.email === process.env.NEXT_PUBLIC_EMERGENCY_ADMIN_EMAIL ||
+    const isEmergencyAdmin = user.email === process.env.EMERGENCY_ADMIN_USERNAME ||
                              user.name === "Emergency Admin"
 
     return <HomePageClient user={user} isEmergencyAdmin={isEmergencyAdmin} />

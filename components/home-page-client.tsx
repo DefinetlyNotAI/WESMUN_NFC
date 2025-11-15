@@ -74,7 +74,7 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
                             </Link>
                         )}
 
-                        {(effectiveRole === "overseer" || effectiveRole === "admin") && (
+                        {effectiveRole === "admin" && (
                             <Link href="/users">
                                 <Button className="w-full bg-transparent" variant="outline" size="lg">
                                     User Management
@@ -115,7 +115,7 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
                             {effectiveRole === "overseer" && (
                                 <>
                                     <li>View all user data (read-only)</li>
-                                    <li>Monitor system activity</li>
+                                    <li>Only physical card scanning is allowed</li>
                                 </>
                             )}
                             {effectiveRole === "user" && (

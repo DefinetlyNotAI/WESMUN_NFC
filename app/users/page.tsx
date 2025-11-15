@@ -9,7 +9,7 @@ export default async function UsersPage() {
         redirect("/auth/signin")
     }
 
-    if (user.role !== "overseer" && user.role !== "admin") {
+    if (user.role !== "admin") {
         redirect("/")
     }
 
