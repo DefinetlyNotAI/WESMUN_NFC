@@ -4,7 +4,7 @@ import {useEffect, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
-import {ArrowLeft, Loader2, RefreshCw, Shield} from "lucide-react"
+import { ArrowLeft, Loader2, RefreshCw, Shield, Trash2 } from 'lucide-react'
 import Link from "next/link"
 
 interface AuditLog {
@@ -39,9 +39,11 @@ export function AuditLogsView() {
     const [logs, setLogs] = useState<AuditLog[]>([])
     const [loading, setLoading] = useState(true)
     const [total, setTotal] = useState(0)
+    const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set())
+    const [deleting, setDeleting] = useState(false)
 
     useEffect(() => {
-        fetchLogs().catch(console.error)
+        fetchLogs()
     }, [])
 
     const fetchLogs = async () => {
@@ -58,6 +60,66 @@ export function AuditLogsView() {
         }
     }
 
+    const deleteLog = async (logId: number) => {
+        if (!confirm("Delete this audit log? This action cannot be undone.")) return
+
+        setDeleting(true)
+        try {
+            const response = await fetch(`/api/audit/${logId}`, {
+                method: "DELETE"
+            })
+
+            if (response.ok) {
+                setLogs(logs.filter(l => l.id !== logId))
+                setTotal(total - 1)
+            } else {
+                alert("Failed to delete log")
+            }
+        } catch (error) {
+            console.error("Delete error:", error)
+            alert("Error deleting log")
+        } finally {
+            setDeleting(false)
+        }
+    }
+
+    const bulkDelete = async () => {
+        if (selectedLogs.size === 0) return
+        if (!confirm(`Delete ${selectedLogs.size} logs? This action cannot be undone.`)) return
+
+        setDeleting(true)
+        try {
+            const response = await fetch("/api/audit/bulk-delete", {
+                method: "DELETE",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({logIds: Array.from(selectedLogs)})
+            })
+
+            if (response.ok) {
+                setLogs(logs.filter(l => !selectedLogs.has(l.id)))
+                setTotal(total - selectedLogs.size)
+                setSelectedLogs(new Set())
+            } else {
+                alert("Failed to delete logs")
+            }
+        } catch (error) {
+            console.error("Bulk delete error:", error)
+            alert("Error deleting logs")
+        } finally {
+            setDeleting(false)
+        }
+    }
+
+    const toggleLogSelection = (logId: number) => {
+        const newSelected = new Set(selectedLogs)
+        if (newSelected.has(logId)) {
+            newSelected.delete(logId)
+        } else {
+            newSelected.add(logId)
+        }
+        setSelectedLogs(newSelected)
+    }
+
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
@@ -69,17 +131,37 @@ export function AuditLogsView() {
     return (
         <div className="min-h-screen bg-muted/30 p-4">
             <div className="container mx-auto max-w-6xl space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
                     <Link href="/">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="transition-all duration-200 hover:scale-105 active:scale-95">
                             <ArrowLeft className="mr-2 h-4 w-4"/>
                             Back to Dashboard
                         </Button>
                     </Link>
-                    <Button variant="outline" size="sm" onClick={fetchLogs}>
-                        <RefreshCw className="mr-2 h-4 w-4"/>
-                        Refresh
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        {selectedLogs.size > 0 && (
+                            <Button 
+                                variant="destructive" 
+                                size="sm" 
+                                onClick={bulkDelete}
+                                disabled={deleting}
+                                className="transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                <Trash2 className="mr-2 h-4 w-4"/>
+                                Delete {selectedLogs.size}
+                            </Button>
+                        )}
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={fetchLogs}
+                            disabled={loading}
+                            className="transition-all duration-200 hover:scale-105 active:scale-95"
+                        >
+                            <RefreshCw className="mr-2 h-4 w-4"/>
+                            Refresh
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
@@ -88,8 +170,7 @@ export function AuditLogsView() {
                             <Shield className="h-5 w-5"/>
                             <CardTitle>Audit Logs</CardTitle>
                         </div>
-                        <CardDescription>Complete activity trail of all system actions ({total} total
-                            entries)</CardDescription>
+                        <CardDescription>Complete activity trail of all system actions ({total} total entries)</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
@@ -100,9 +181,15 @@ export function AuditLogsView() {
                                 }
 
                                 return (
-                                    <div key={log.id} className="rounded-lg border p-4">
-                                        <div
-                                            className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div key={log.id} className="rounded-lg border p-4 flex items-start gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedLogs.has(log.id)}
+                                            onChange={() => toggleLogSelection(log.id)}
+                                            className="mt-1 cursor-pointer"
+                                        />
+
+                                        <div className="flex-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className={`h-2 w-2 rounded-full ${actionConfig.color}`}/>
@@ -138,9 +225,18 @@ export function AuditLogsView() {
                                                 </div>
                                             </div>
 
-                                            <div className="text-right text-xs text-muted-foreground">
+                                            <div className="flex items-center gap-2 text-right text-xs text-muted-foreground">
                                                 <p>{new Date(log.created_at).toLocaleString()}</p>
                                                 {log.ip_address && <p className="font-mono">{log.ip_address}</p>}
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => deleteLog(log.id)}
+                                                    disabled={deleting}
+                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
+                                                >
+                                                    <Trash2 className="h-3 w-3 text-red-600"/>
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>

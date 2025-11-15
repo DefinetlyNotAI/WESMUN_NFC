@@ -6,7 +6,8 @@ import {Badge} from "@/components/ui/badge"
 import {Checkbox} from "@/components/ui/checkbox"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import {AlertTriangle, CheckCircle2, Loader2, User, Utensils, XCircle} from "lucide-react"
+import { AlertTriangle, CheckCircle2, Loader2, User, Utensils, XCircle, Copy } from 'lucide-react'
+import {Button} from "@/components/ui/button"
 import type {DietType, UserRole} from "@/lib/types/database"
 
 interface UserData {
@@ -39,46 +40,84 @@ interface NfcScanViewProps {
 export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     const [loading, setLoading] = useState(true)
     const [userData, setUserData] = useState<UserData | null>(null)
-    const [error] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)
     const [updating, setUpdating] = useState(false)
+    const [copied, setCopied] = useState(false)
 
     useEffect(() => {
-        fetchUserData().catch(console.error)
+        fetchUserData()
     }, [uuid])
 
     const fetchUserData = async () => {
         setLoading(true)
-        const response = await fetch(`/api/nfc/${uuid}`)
-        if (response.status === 204) throw new Error("Unauthorized")
-        if (!response.ok) throw new Error("Failed to fetch user data")
-        const data = await response.json()
-        setUserData(data)
-        setLoading(false)
+        setError(null)
+        try {
+            const response = await fetch(`/api/nfc/${uuid}`)
+            
+            if (response.status === 404) {
+                setError("NFC UUID not found. Please check the code and try again.")
+                setUserData(null)
+                return
+            }
+
+            if (response.status === 204) {
+                setError("Unauthorized access")
+                setUserData(null)
+                return
+            }
+
+            if (!response.ok) {
+                const data = await response.json()
+                setError(data.error || "Failed to fetch user data")
+                setUserData(null)
+                return
+            }
+
+            const data = await response.json()
+            setUserData(data)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An error occurred while fetching user data")
+            setUserData(null)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const updateProfile = async (field: "bags_checked" | "attendance", value: boolean) => {
         if (!userData) return
 
         setUpdating(true)
-        const response = await fetch(`/api/nfc/${uuid}/update`, {
-            method: "PATCH",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({[field]: value}),
-        })
-        if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.error || "Failed to update")
-        }
+        try {
+            const response = await fetch(`/api/nfc/${uuid}/update`, {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({[field]: value}),
+            })
+            if (!response.ok) {
+                const error = await response.json()
+                // noinspection ExceptionCaughtLocallyJS
+                throw new Error(error.error || "Failed to update")
+            }
 
-        // Update local state
-        setUserData({
-            ...userData,
-            profile: {
-                ...userData.profile,
-                [field]: value,
-            },
-        })
-        setUpdating(false)
+            // Update local state
+            setUserData({
+                ...userData,
+                profile: {
+                    ...userData.profile,
+                    [field]: value,
+                },
+            })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to update profile")
+        } finally {
+            setUpdating(false)
+        }
+    }
+
+    const copyUUID = () => {
+        navigator.clipboard.writeText(uuid)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
     }
 
     if (loading) {
@@ -217,6 +256,22 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                                 )}
                             </div>
                         )}
+
+                        {/* UUID Copy Button */}
+                        <div className="flex items-center justify-between rounded-lg border p-4">
+                            <div>
+                                <p className="text-sm font-medium">NFC UUID</p>
+                                <p className="text-xs text-muted-foreground font-mono break-all">{uuid}</p>
+                            </div>
+                            <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={copyUUID}
+                                className="transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                <Copy className={`h-3 w-3 transition-colors ${copied ? 'text-green-600' : ''}`}/>
+                            </Button>
+                        </div>
 
                         {/* Scan Info */}
                         <div className="text-center text-xs text-muted-foreground">

@@ -1,3 +1,5 @@
+// noinspection ExceptionCaughtLocallyJS
+
 "use client"
 
 import React, { useEffect, useState } from "react"
@@ -7,19 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, CheckCircle2, Loader2, Trash2, UserPlus, XCircle, Search, Edit2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2, Trash2, UserPlus, XCircle, Search, Edit2, RefreshCw } from 'lucide-react'
 import Link from "next/link"
-import type { UserRole } from "@/lib/types/database"
+import type { UserRole, DietType } from "@/lib/types/database"
 import { PendingApprovals } from "./pending-approvals"
 import { SecurityCreateUsers } from "./security-create-users"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { UserEditDialog } from "../users/user-edit-dialog"
 
 interface User {
     id: string
@@ -29,7 +25,7 @@ interface User {
     profile: {
         bags_checked: boolean
         attendance: boolean
-        diet: string
+        diet: DietType
         allergens: string | null
     }
     nfc_link: {
@@ -65,7 +61,6 @@ export function AdminPanel() {
     const [updating, setUpdating] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [editingUser, setEditingUser] = useState<User | null>(null)
-    const [editRole, setEditRole] = useState<UserRole>("user")
 
     const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 
@@ -88,13 +83,18 @@ export function AdminPanel() {
     }, [searchQuery, users])
 
     const fetchUsers = async () => {
-        setLoading(true)
-        const response = await fetch("/api/users")
-        if (!response.ok) throw new Error("Failed to fetch users")
-        const data = await response.json()
-        setUsers(data.users)
-        setFilteredUsers(data.users)
-        setLoading(false)
+        try {
+            setLoading(true)
+            const response = await fetch("/api/users")
+            if (!response.ok) throw new Error("Failed to fetch users")
+            const data = await response.json()
+            setUsers(data.users)
+            setFilteredUsers(data.users)
+        } catch (error) {
+            console.error("[v0] Fetch users error:", error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const updateUserRole = async (userId: string, newRole: UserRole, username?: string) => {
@@ -103,29 +103,41 @@ export function AdminPanel() {
             return
         }
         setUpdating(userId)
-        const response = await fetch(`/api/users/${userId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role: newRole }),
-        })
-        if (!response.ok) throw new Error("Failed to update role")
-        await fetchUsers()
-        setUpdating(null)
+        try {
+            const response = await fetch(`/api/users/${userId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role: newRole }),
+            })
+            if (!response.ok) throw new Error("Failed to update role")
+            await fetchUsers()
+        } catch (error) {
+            console.error("Update error:", error)
+            alert("Failed to update user")
+        } finally {
+            setUpdating(null)
+        }
     }
 
     const createNfcLink = async (userId: string) => {
         setUpdating(userId)
-        const response = await fetch("/api/nfc-links", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
-        })
-        if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.error || "Failed to create NFC link")
+        try {
+            const response = await fetch("/api/nfc-links", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId }),
+            })
+            if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.error || "Failed to create NFC link")
+            }
+            await fetchUsers()
+        } catch (error) {
+            console.error("NFC create error:", error)
+            alert("Failed to create NFC link")
+        } finally {
+            setUpdating(null)
         }
-        await fetchUsers()
-        setUpdating(null)
     }
 
     const deleteUser = async (userId: string, role?: UserRole) => {
@@ -135,29 +147,16 @@ export function AdminPanel() {
         }
         if (!confirm("Are you sure you want to delete this user?")) return
         setUpdating(userId)
-        const response = await fetch(`/api/users/${userId}`, { method: "DELETE" })
-        if (!response.ok) throw new Error("Failed to delete user")
-        await fetchUsers()
-        setUpdating(null)
-    }
-
-    const handleEditUser = (user: User) => {
-        setEditingUser(user)
-        setEditRole(user.role.name)
-    }
-
-    const saveUserEdit = async () => {
-        if (!editingUser) return
-        setUpdating(editingUser.id)
-        const response = await fetch(`/api/users/${editingUser.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role: editRole }),
-        })
-        if (!response.ok) throw new Error("Failed to update user")
-        await fetchUsers()
-        setUpdating(null)
-        setEditingUser(null)
+        try {
+            const response = await fetch(`/api/users/${userId}`, { method: "DELETE" })
+            if (!response.ok) throw new Error("Failed to delete user")
+            await fetchUsers()
+        } catch (error) {
+            console.error("Delete error:", error)
+            alert("Failed to delete user")
+        } finally {
+            setUpdating(null)
+        }
     }
 
     if (loading) {
@@ -171,12 +170,24 @@ export function AdminPanel() {
     return (
         <div className="min-h-screen bg-muted/30 p-4">
             <div className="container mx-auto max-w-7xl space-y-4">
-                <Link href="/">
-                    <Button variant="ghost" size="sm">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Dashboard
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <Link href="/">
+                        <Button variant="ghost" size="sm" className="transition-all duration-200 hover:scale-105 active:scale-95">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Dashboard
+                        </Button>
+                    </Link>
+                    <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={fetchUsers}
+                        disabled={loading}
+                        className="transition-all duration-200 hover:scale-105 active:scale-95"
+                    >
+                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
+                        Refresh
                     </Button>
-                </Link>
+                </div>
 
                 <Tabs defaultValue="pending" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
@@ -292,6 +303,7 @@ export function AdminPanel() {
                                                                     variant="outline"
                                                                     onClick={() => createNfcLink(user.id)}
                                                                     disabled={updating === user.id}
+                                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
                                                                 >
                                                                     <UserPlus className="mr-1 h-3 w-3" />
                                                                     Create
@@ -304,8 +316,9 @@ export function AdminPanel() {
                                                                 <Button
                                                                     size="sm"
                                                                     variant="ghost"
-                                                                    onClick={() => handleEditUser(user)}
+                                                                    onClick={() => setEditingUser(user)}
                                                                     disabled={updating === user.id || isEmergencyAdmin}
+                                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
                                                                 >
                                                                     <Edit2 className="h-4 w-4" />
                                                                 </Button>
@@ -314,6 +327,7 @@ export function AdminPanel() {
                                                                     variant="ghost"
                                                                     onClick={() => deleteUser(user.id, user.role.name)}
                                                                     disabled={updating === user.id || isAdmin}
+                                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
                                                                 >
                                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                                 </Button>
@@ -334,53 +348,12 @@ export function AdminPanel() {
                     </TabsContent>
                 </Tabs>
 
-                <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Edit User</DialogTitle>
-                            <DialogDescription>
-                                Modify user {editingUser?.name} settings
-                            </DialogDescription>
-                        </DialogHeader>
-                        {editingUser && (
-                            <div className="space-y-4">
-                                <div>
-                                    <p className="text-sm font-medium mb-2">Email</p>
-                                    <p className="text-sm text-muted-foreground">{editingUser.email}</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Role</label>
-                                    <Select value={editRole} onValueChange={(value) => setEditRole(value as UserRole)}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="user">User</SelectItem>
-                                            <SelectItem value="security">Security</SelectItem>
-                                            <SelectItem value="overseer">Overseer</SelectItem>
-                                            <SelectItem value="admin">Admin</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="flex gap-2 pt-4">
-                                    <Button variant="outline" onClick={() => setEditingUser(null)}>
-                                        Cancel
-                                    </Button>
-                                    <Button onClick={saveUserEdit} disabled={updating === editingUser.id}>
-                                        {updating === editingUser.id ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            "Save Changes"
-                                        )}
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </DialogContent>
-                </Dialog>
+                <UserEditDialog
+                    open={!!editingUser}
+                    user={editingUser}
+                    onOpenChange={(open) => !open && setEditingUser(null)}
+                    onSave={fetchUsers}
+                />
             </div>
         </div>
     )

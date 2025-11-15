@@ -160,11 +160,11 @@ END$$;
 -- Email domain constraint
 DO $$
 BEGIN
-    IF NOT EXISTS (
+    IF EXISTS (
         SELECT 1 FROM information_schema.table_constraints
         WHERE table_name='users' AND constraint_name='email_domain_check'
     ) THEN
-        ALTER TABLE users ADD CONSTRAINT email_domain_check CHECK (email LIKE '%@wesmun.com');
+        ALTER TABLE users DROP CONSTRAINT email_domain_check;
     END IF;
 END$$;
 

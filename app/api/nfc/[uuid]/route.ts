@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, {params}: { params: { uuid: stri
             return new NextResponse(null, {status: 204})
         }
 
-        const {uuid} = params
+        const {uuid} = await params
 
         const users = await query<User & { profile: Profile; nfc_link: NfcLink; role: Role }>(
             `SELECT u.*,

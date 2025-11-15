@@ -14,6 +14,7 @@ export default async function NfcPage({params}: NfcPageProps) {
     if (!user) {
         redirect("/auth/signin")
     }
+    const {uuid} = await params
 
-    return <NfcScanView uuid={params.uuid} userRole={user.role}/>
+    return <NfcScanView uuid={uuid} userRole={user.role}/>
 }
