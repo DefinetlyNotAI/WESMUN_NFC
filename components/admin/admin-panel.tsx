@@ -3,19 +3,15 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, CheckCircle2, Loader2, Trash2, UserPlus, XCircle, Search, Edit2, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react'
 import Link from "next/link"
 import type { UserRole, DietType } from "@/lib/types/database"
 import { PendingApprovals } from "./pending-approvals"
 import { SecurityCreateUsers } from "./security-create-users"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserEditDialog } from "../users/user-edit-dialog"
+import {UserManagementSection} from "@/components/admin/user-management";
 
 interface User {
     id: string
@@ -37,23 +33,6 @@ interface User {
     }
 }
 
-interface StatusIconProps {
-    active: boolean
-    activeLabel: string
-    inactiveLabel: string
-}
-
-const StatusIcon: React.FC<StatusIconProps> = ({ active, activeLabel, inactiveLabel }) => (
-    <div className="flex items-center gap-2">
-        {active ? (
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-        ) : (
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-        )}
-        <span className="text-xs text-muted-foreground">{active ? activeLabel : inactiveLabel}</span>
-    </div>
-)
-
 export function AdminPanel() {
     const [users, setUsers] = useState<User[]>([])
     const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -61,6 +40,7 @@ export function AdminPanel() {
     const [updating, setUpdating] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [editingUser, setEditingUser] = useState<User | null>(null)
+    const [copiedUuid, setCopiedUuid] = useState<string | null>(null)
 
     const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 
@@ -74,8 +54,8 @@ export function AdminPanel() {
         } else {
             const query = searchQuery.toLowerCase()
             setFilteredUsers(
-                users.filter(user => 
-                    user.name.toLowerCase().includes(query) || 
+                users.filter(user =>
+                    user.name.toLowerCase().includes(query) ||
                     user.email.toLowerCase().includes(query)
                 )
             )
@@ -189,174 +169,33 @@ export function AdminPanel() {
                     </Button>
                 </div>
 
-                <Tabs defaultValue="pending" className="w-full">
+                <Tabs defaultValue="manage-users" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="pending">Pending Approvals</TabsTrigger>
-                        <TabsTrigger value="users">User Management</TabsTrigger>
-                        <TabsTrigger value="security">Security</TabsTrigger>
+                        <TabsTrigger value="manage-users">Manage Delegates</TabsTrigger>
+                        <TabsTrigger value="add-users">Add Delegates</TabsTrigger>
+                        <TabsTrigger value="pending">Check requested signups</TabsTrigger>
                     </TabsList>
+
+                    <TabsContent value="manage-users">
+                        <UserManagementSection
+                            filteredUsers={filteredUsers}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            updating={updating}
+                            copiedUuid={copiedUuid}
+                            setCopiedUuid={setCopiedUuid}
+                            fetchUsers={fetchUsers}
+                            updateUserRole={updateUserRole}
+                            createNfcLink={createNfcLink}
+                            deleteUser={deleteUser}
+                        />
+                    </TabsContent>
 
                     <TabsContent value="pending">
                         <PendingApprovals />
                     </TabsContent>
 
-                    <TabsContent value="users">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>User Management</CardTitle>
-                                <CardDescription>Manage users, roles, and NFC links</CardDescription>
-                                <div className="mt-4 relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Search by name or email..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-9"
-                                    />
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>User</TableHead>
-                                                <TableHead>Role</TableHead>
-                                                <TableHead>Status</TableHead>
-                                                <TableHead>NFC Link</TableHead>
-                                                <TableHead className="text-right">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {filteredUsers.map((user) => {
-                                                const isEmergencyAdmin = user.email === process.env.NEXT_PUBLIC_EMERGENCY_ADMIN_EMAIL || user.name === EMERGENCY_ADMIN
-                                                const isAdmin = user.role.name === "admin"
-                                                const isWesmunEmail = user.email.toLowerCase().endsWith("@wesmun.com")
-                                                const canChangeRole = isWesmunEmail && !isEmergencyAdmin
-
-                                                return (
-                                                    <TableRow key={user.id}>
-                                                        <TableCell>
-                                                            <div className="flex items-center gap-2">
-                                                                {user.image ? (
-                                                                    <img
-                                                                        src={user.image || "/wesmun.svg"}
-                                                                        alt={user.name}
-                                                                        className="h-8 w-8 rounded-full"
-                                                                    />
-                                                                ) : (
-                                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
-                                                                        {user.name.charAt(0)}
-                                                                    </div>
-                                                                )}
-                                                                <div>
-                                                                    <p className="text-sm font-medium">{user.name}</p>
-                                                                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                                                                </div>
-                                                            </div>
-                                                        </TableCell>
-
-                                                        <TableCell>
-                                                            <Select
-                                                                value={user.role.name}
-                                                                onValueChange={(value) =>
-                                                                    updateUserRole(user.id, value as UserRole, user.name)
-                                                                }
-                                                                disabled={updating === user.id || !canChangeRole}
-                                                            >
-                                                                <SelectTrigger className="w-32">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="user">User</SelectItem>
-                                                                    <SelectItem value="security">Security</SelectItem>
-                                                                    <SelectItem value="overseer">Overseer</SelectItem>
-                                                                    <SelectItem value="admin">Admin</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
-                                                            {!canChangeRole && !isEmergencyAdmin && (
-                                                                <p className="text-xs text-muted-foreground mt-1">
-                                                                    @wesmun.com only
-                                                                </p>
-                                                            )}
-                                                            {isEmergencyAdmin && (
-                                                                <p className="text-xs text-orange-600 mt-1">
-                                                                    Emergency Admin
-                                                                </p>
-                                                            )}
-                                                        </TableCell>
-
-                                                        <TableCell>
-                                                            {user.role.name !== "admin" && user.role.name !== "security" && user.role.name !== "overseer" ? (
-                                                                <div className="flex gap-3">
-                                                                    <StatusIcon
-                                                                        active={user.profile.bags_checked}
-                                                                        activeLabel="Bags Checked"
-                                                                        inactiveLabel="Bags Not Checked"
-                                                                    />
-                                                                    <StatusIcon
-                                                                        active={user.profile.attendance}
-                                                                        activeLabel="Attendance"
-                                                                        inactiveLabel="No Attendance"
-                                                                    />
-                                                                </div>
-                                                            ) : (
-                                                                <Badge variant="secondary" className="text-xs">No status tracking</Badge>
-                                                            )}
-                                                        </TableCell>
-
-                                                        <TableCell>
-                                                            {user.nfc_link ? (
-                                                                <Badge variant="secondary" className="font-mono text-xs">
-                                                                    {user.nfc_link.scan_count} scans
-                                                                </Badge>
-                                                            ) : (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={() => createNfcLink(user.id)}
-                                                                    disabled={updating === user.id}
-                                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
-                                                                >
-                                                                    <UserPlus className="mr-1 h-3 w-3" />
-                                                                    Create
-                                                                </Button>
-                                                            )}
-                                                        </TableCell>
-
-                                                        <TableCell className="text-right">
-                                                            <div className="flex gap-2 justify-end">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    onClick={() => setEditingUser(user)}
-                                                                    disabled={updating === user.id || isEmergencyAdmin}
-                                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
-                                                                >
-                                                                    <Edit2 className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    onClick={() => deleteUser(user.id, user.role.name)}
-                                                                    disabled={updating === user.id || isAdmin || isEmergencyAdmin}
-                                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                                </Button>
-                                                            </div>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="security">
+                    <TabsContent value="add-users">
                         <SecurityCreateUsers />
                     </TabsContent>
                 </Tabs>

@@ -5,10 +5,11 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Badge} from "@/components/ui/badge"
-import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle, Edit2, RefreshCw } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle, Edit2, RefreshCw, Copy } from 'lucide-react'
 import Link from "next/link"
 import type {DietType, UserRole} from "@/lib/types/database"
 import {UserEditDialog} from "./user-edit-dialog"
+import {copyUuid} from "@/lib/copyUUID";
 
 interface User {
     id: string
@@ -37,10 +38,11 @@ export function UsersView() {
     const [searchQuery, setSearchQuery] = useState("")
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null)
+    const [copiedUuid, setCopiedUuid] = useState<string | null>(null)
 
     useEffect(() => {
-        getCurrentUserRole()
-        fetchUsers()
+        getCurrentUserRole().catch(console.error)
+        fetchUsers().catch(console.error)
     }, [])
 
     useEffect(() => {
@@ -79,6 +81,8 @@ export function UsersView() {
             setLoading(false)
         }
     }
+
+
 
     if (loading) {
         return (
@@ -211,9 +215,20 @@ export function UsersView() {
                                                     </Button>
                                                 )}
                                                 {user.nfc_link && (
-                                                    <Badge variant="secondary" className="font-mono text-xs">
-                                                        {user.nfc_link.scan_count} scans
-                                                    </Badge>
+                                                    <>
+                                                        <Badge variant="secondary" className="font-mono text-xs">
+                                                            {user.nfc_link.scan_count} scans
+                                                        </Badge>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => copyUuid(user.nfc_link!.uuid, user.id, setCopiedUuid)}
+                                                            className="h-7 w-7 p-0 transition-all duration-200 hover:scale-105 active:scale-95"
+                                                            title="Copy NFC link"
+                                                        >
+                                                            <Copy className={`h-3 w-3 ${copiedUuid === user.id ? 'text-green-600' : ''}`}/>
+                                                        </Button>
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
