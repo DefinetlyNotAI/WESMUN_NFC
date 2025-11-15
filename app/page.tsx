@@ -1,11 +1,6 @@
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
-import {ThemeToggle} from "@/components/ui/theme-toggle"
 import {getCurrentUser} from "@/lib/session"
-import Link from "next/link"
 import { redirect } from 'next/navigation'
-import LogoutButton from "@/components/auth/sign-out-handler";
-
+import { HomePageClient } from "@/components/home-page-client"
 export default async function HomePage() {
     const user = await getCurrentUser()
 
@@ -13,95 +8,8 @@ export default async function HomePage() {
         redirect("/auth/signin")
     }
 
-    return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-            <div className="absolute top-4 right-4">
-                <ThemeToggle/>
-            </div>
-            <Card className="w-full max-w-2xl">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold">WESMUN NFC System</CardTitle>
-                    <CardDescription className="text-base">
-                        Welcome, {user.name} ({user.role})
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-4 text-sm text-blue-900 dark:text-blue-100">
-                        <p className="font-semibold">Secure Access</p>
-                        <p className="mt-1">You are signed in with a @wesmun.com account. All actions are IP-logged for
-                            security.</p>
-                    </div>
+    const isEmergencyAdmin = user.email === process.env.NEXT_PUBLIC_EMERGENCY_ADMIN_EMAIL ||
+                             user.name === "Emergency Admin"
 
-                    <div className="grid gap-3">
-                        {user.role === "admin" && (
-                            <Link href="/admin">
-                                <Button className="w-full" size="lg">
-                                    Admin Panel
-                                </Button>
-                            </Link>
-                        )}
-
-                        {(user.role === "security" || user.role === "admin") && (
-                            <Link href="/scan">
-                                <Button className="w-full bg-transparent" variant="outline" size="lg">
-                                    Scanner View
-                                </Button>
-                            </Link>
-                        )}
-
-                        {(user.role === "overseer" || user.role === "admin") && (
-                            <Link href="/users">
-                                <Button className="w-full bg-transparent" variant="outline" size="lg">
-                                    User Management
-                                </Button>
-                            </Link>
-                        )}
-
-                        {(user.name === "Emergency Admin") && (
-                            <Link href="/audit">
-                                <Button className="w-full bg-transparent" variant="outline" size="lg">
-                                    Audit Logs
-                                </Button>
-                            </Link>
-                        )}
-
-                        <LogoutButton />
-                    </div>
-
-                    <div className="rounded-lg border bg-slate-50 dark:bg-slate-900 p-4 text-sm">
-                        <p className="font-semibold text-slate-900 dark:text-slate-100">Your Role: {user.role}</p>
-                        <ul className="mt-2 list-inside list-disc space-y-1 text-slate-700 dark:text-slate-300">
-                            {user.role === "admin" && (
-                                <>
-                                    <li>Full system access</li>
-                                    <li>Approve/reject new users</li>
-                                    <li>Manage user roles and permissions</li>
-                                    <li>Create NFC links</li>
-                                </>
-                            )}
-                            {user.role === "security" && (
-                                <>
-                                    <li>Scan NFC cards</li>
-                                    <li>Update bags checked status</li>
-                                    <li>Mark attendance</li>
-                                    <li>View user profiles</li>
-                                </>
-                            )}
-                            {user.role === "overseer" && (
-                                <>
-                                    <li>View all user data (read-only)</li>
-                                    <li>Monitor system activity</li>
-                                </>
-                            )}
-                            {user.role === "user" && (
-                                <>
-                                    <li>If you see this, please contact the administrator</li>
-                                </>
-                            )}
-                        </ul>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
+    return <HomePageClient user={user} isEmergencyAdmin={isEmergencyAdmin} />
 }
