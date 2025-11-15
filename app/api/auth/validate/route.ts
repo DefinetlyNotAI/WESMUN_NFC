@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(user)
     } catch (error) {
-        console.error("[v0] Validation error:", error)
+        console.error("[WESMUN] Validation error:", error)
         return NextResponse.json({error: "Validation failed"}, {status: 500})
     }
 }

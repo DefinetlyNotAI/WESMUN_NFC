@@ -37,7 +37,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
             image: user.image || undefined,
         }
     } catch (error) {
-        console.error("[v0] Session validation error:", error)
+        console.error("[WESMUN] Session validation error:", error)
         return null
     }
 }

@@ -35,7 +35,7 @@ export function PendingApprovals() {
                 setUsers(data.users)
             }
         } catch (error) {
-            console.error("[v0] Failed to fetch pending users:", error)
+            console.error("[WESMUN] Failed to fetch pending users:", error)
         } finally {
             setLoading(false)
         }

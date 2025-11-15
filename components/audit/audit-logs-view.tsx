@@ -54,7 +54,7 @@ export function AuditLogsView() {
             setLogs(data.logs)
             setTotal(data.total)
         } catch (error) {
-            console.error("[v0] Failed to fetch audit logs:", error)
+            console.error("[WESMUN] Failed to fetch audit logs:", error)
         } finally {
             setLoading(false)
         }
