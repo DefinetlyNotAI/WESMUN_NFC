@@ -145,15 +145,15 @@ export function SignInForm() {
                     </div>
 
                     {error && (
-                        <div
-                            className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                        <div className="rounded-lg border border-destructive bg-destructive/10 dark:bg-red-900/20 p-3 text-sm text-destructive dark:text-red-300">
                             {error}
                         </div>
                     )}
 
                     {success && (
-                        <div
-                            className="rounded-lg border border-green-600 bg-green-50 p-3 text-sm text-green-900">{success}</div>
+                        <div className="rounded-lg border border-green-600 bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-900 dark:text-green-300">
+                            {success}
+                        </div>
                     )}
 
                     <Button type="submit" className="w-full" size="lg" disabled={loading}>
@@ -176,10 +176,9 @@ export function SignInForm() {
                         </button>
                     </div>
 
-                    <div className="rounded-lg border bg-blue-50 p-3 text-xs text-blue-900">
+                    <div className="rounded-lg border bg-blue-50 dark:bg-black p-3 text-xs text-blue-900 dark:text-white">
                         <p className="font-semibold">Note:</p>
-                        <p className="mt-1">Only @wesmun.com email addresses are allowed. New accounts require admin
-                            approval.</p>
+                        <p className="mt-1">Only @wesmun.com email addresses are allowed. New accounts require admin approval. Only WESMUN Team members can sign-in - no delegates.</p>
                     </div>
                 </form>
             </CardContent>
