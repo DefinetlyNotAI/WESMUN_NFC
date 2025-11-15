@@ -1,16 +1,16 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {Search, Copy, UserPlus, Edit2, Trash2, Utensils, XCircle, CheckCircle2} from "lucide-react"
-import React, { useState } from "react"
-import { UserEditDialog } from "../users/user-edit-dialog"
-import { copyUuid } from "@/lib/copyUUID"
-import type { UserRole, DietType } from "@/lib/types/database"
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Badge} from "@/components/ui/badge"
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {CheckCircle2, Copy, Edit2, Search, Trash2, UserPlus, Utensils, XCircle} from "lucide-react"
+import React, {useState} from "react"
+import {UserEditDialog} from "../users/user-edit-dialog"
+import {copyUuid} from "@/lib/copyUUID"
+import type {DietType, UserRole} from "@/lib/types/database"
 
 interface User {
     id: string
@@ -44,22 +44,24 @@ interface Props {
     createNfcLink: (id: string) => Promise<void>
     deleteUser: (id: string, role?: UserRole) => Promise<void>
 }
+
 interface StatusIconProps {
     active: boolean
     activeLabel: string
     inactiveLabel: string
 }
 
-const StatusIcon: React.FC<StatusIconProps> = ({ active, activeLabel, inactiveLabel }) => (
+const StatusIcon: React.FC<StatusIconProps> = ({active, activeLabel, inactiveLabel}) => (
     <div className="flex items-center gap-2">
         {active ? (
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 text-green-600"/>
         ) : (
-            <XCircle className="h-4 w-4 text-muted-foreground" />
+            <XCircle className="h-4 w-4 text-muted-foreground"/>
         )}
         <span className="text-xs text-muted-foreground">{active ? activeLabel : inactiveLabel}</span>
     </div>
 )
+
 export function UserManagementSection(props: Props) {
     const {
         filteredUsers,
@@ -85,7 +87,7 @@ export function UserManagementSection(props: Props) {
                 <CardDescription>Manage users, roles, and NFC links</CardDescription>
 
                 <div className="mt-4 relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
                     <Input
                         placeholder="Search by name or email..."
                         value={searchQuery}
@@ -128,7 +130,8 @@ export function UserManagementSection(props: Props) {
                                                         className="h-8 w-8 rounded-full"
                                                     />
                                                 ) : (
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
+                                                    <div
+                                                        className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
                                                         {user.name.charAt(0)}
                                                     </div>
                                                 )}
@@ -149,7 +152,7 @@ export function UserManagementSection(props: Props) {
                                                 disabled={updating === user.id || !canChangeRole}
                                             >
                                                 <SelectTrigger className="w-32">
-                                                    <SelectValue />
+                                                    <SelectValue/>
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="user">User</SelectItem>
@@ -189,7 +192,7 @@ export function UserManagementSection(props: Props) {
                                                     </div>
 
                                                     <div className="flex items-center gap-1.5">
-                                                        <Utensils className="h-3 w-3 text-muted-foreground" />
+                                                        <Utensils className="h-3 w-3 text-muted-foreground"/>
                                                         <Badge
                                                             variant={
                                                                 user.profile.diet === "veg"
@@ -253,7 +256,7 @@ export function UserManagementSection(props: Props) {
                                                     onClick={() => createNfcLink(user.id)}
                                                     disabled={updating === user.id}
                                                 >
-                                                    <UserPlus className="mr-1 h-3 w-3" />
+                                                    <UserPlus className="mr-1 h-3 w-3"/>
                                                     Create
                                                 </Button>
                                             )}
@@ -267,7 +270,7 @@ export function UserManagementSection(props: Props) {
                                                     onClick={() => setEditingUser(user)}
                                                     disabled={updating === user.id || isEmergencyAdmin}
                                                 >
-                                                    <Edit2 className="h-4 w-4" />
+                                                    <Edit2 className="h-4 w-4"/>
                                                 </Button>
 
                                                 <Button
@@ -276,7 +279,7 @@ export function UserManagementSection(props: Props) {
                                                     onClick={() => deleteUser(user.id, user.role.name)}
                                                     disabled={updating === user.id || isAdmin || isEmergencyAdmin}
                                                 >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                    <Trash2 className="h-4 w-4 text-destructive"/>
                                                 </Button>
                                             </div>
                                         </TableCell>

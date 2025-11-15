@@ -137,7 +137,8 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                     )}
 
                     {!canChangeRole && (
-                        <div className="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-900 p-3">
+                        <div
+                            className="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-900 p-3">
                             <p className="text-xs text-yellow-800 dark:text-yellow-200">
                                 ⓘ Role changes are restricted to @wesmun.com email accounts
                             </p>

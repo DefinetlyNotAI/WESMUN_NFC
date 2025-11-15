@@ -2,15 +2,15 @@
 
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react'
+import React, {useEffect, useState} from "react"
+import {Button} from "@/components/ui/button"
+import {ArrowLeft, Loader2, RefreshCw} from 'lucide-react'
 import Link from "next/link"
-import type { UserRole, DietType } from "@/lib/types/database"
-import { PendingApprovals } from "./pending-approvals"
-import { SecurityCreateUsers } from "./security-create-users"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserEditDialog } from "../users/user-edit-dialog"
+import type {DietType, UserRole} from "@/lib/types/database"
+import {PendingApprovals} from "./pending-approvals"
+import {SecurityCreateUsers} from "./security-create-users"
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
+import {UserEditDialog} from "../users/user-edit-dialog"
 import {UserManagementSection} from "@/components/admin/user-management";
 
 interface User {
@@ -86,8 +86,8 @@ export function AdminPanel() {
         try {
             const response = await fetch(`/api/users/${userId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ role: newRole }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({role: newRole}),
             })
             if (!response.ok) throw new Error("Failed to update role")
             await fetchUsers()
@@ -104,8 +104,8 @@ export function AdminPanel() {
         try {
             const response = await fetch("/api/nfc-links", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({userId}),
             })
             if (!response.ok) {
                 const error = await response.json()
@@ -128,7 +128,7 @@ export function AdminPanel() {
         if (!confirm("Are you sure you want to delete this user?")) return
         setUpdating(userId)
         try {
-            const response = await fetch(`/api/users/${userId}`, { method: "DELETE" })
+            const response = await fetch(`/api/users/${userId}`, {method: "DELETE"})
             if (!response.ok) throw new Error("Failed to delete user")
             await fetchUsers()
         } catch (error) {
@@ -142,7 +142,7 @@ export function AdminPanel() {
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
             </div>
         )
     }
@@ -152,13 +152,14 @@ export function AdminPanel() {
             <div className="container mx-auto max-w-7xl space-y-4">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                     <Link href="/">
-                        <Button variant="ghost" size="sm" className="transition-all duration-200 hover:scale-105 active:scale-95">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                        <Button variant="ghost" size="sm"
+                                className="transition-all duration-200 hover:scale-105 active:scale-95">
+                            <ArrowLeft className="mr-2 h-4 w-4"/>
                             Back to Dashboard
                         </Button>
                     </Link>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         size="sm"
                         onClick={fetchUsers}
                         disabled={loading}
@@ -192,11 +193,11 @@ export function AdminPanel() {
                     </TabsContent>
 
                     <TabsContent value="pending">
-                        <PendingApprovals />
+                        <PendingApprovals/>
                     </TabsContent>
 
                     <TabsContent value="add-users">
-                        <SecurityCreateUsers />
+                        <SecurityCreateUsers/>
                     </TabsContent>
                 </Tabs>
 
