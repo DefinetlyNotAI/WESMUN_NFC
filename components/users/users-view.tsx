@@ -5,7 +5,19 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Badge} from "@/components/ui/badge"
-import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle, Edit2, RefreshCw, Copy } from 'lucide-react'
+import {
+    AlertTriangle,
+    ArrowLeft,
+    CheckCircle2,
+    Loader2,
+    Search,
+    Utensils,
+    XCircle,
+    Edit2,
+    RefreshCw,
+    Copy,
+    Eye
+} from 'lucide-react'
 import Link from "next/link"
 import type {DietType, UserRole} from "@/lib/types/database"
 import {UserEditDialog} from "./user-edit-dialog"
@@ -73,8 +85,12 @@ export function UsersView() {
             setLoading(true)
             const response = await fetch("/api/users")
             const data = await response.json()
-            setUsers(data.users)
-            setFilteredUsers(data.users)
+            // Filter out non-data users (security, overseer, admin)
+            const dataUsers = data.users.filter((user: User) =>
+                user.role.name === "user"
+            )
+            setUsers(dataUsers)
+            setFilteredUsers(dataUsers)
         } catch (error) {
             console.error("[WESMUN] Failed to fetch users:", error)
         } finally {
@@ -204,6 +220,18 @@ export function UsersView() {
                                             </div>
 
                                             <div className="flex items-center gap-2">
+                                                {user.nfc_link && (
+                                                    <Link href={`/nfc/${user.nfc_link.uuid}`}>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="default"
+                                                            className="transition-all duration-200 hover:scale-105 active:scale-95"
+                                                        >
+                                                            <Eye className="mr-1 h-4 w-4"/>
+                                                            Visit
+                                                        </Button>
+                                                    </Link>
+                                                )}
                                                 {isAdmin && (
                                                     <Button
                                                         size="sm"
