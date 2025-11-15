@@ -8,6 +8,7 @@ import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
 import { AlertTriangle, CheckCircle2, Loader2, User, Utensils, XCircle, Copy } from 'lucide-react'
 import {Button} from "@/components/ui/button"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import type {DietType, UserRole} from "@/lib/types/database"
 
 interface UserData {
@@ -45,7 +46,7 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     const [copied, setCopied] = useState(false)
 
     useEffect(() => {
-        fetchUserData()
+        fetchUserData().catch(console.error)
     }, [uuid])
 
     const fetchUserData = async () => {
@@ -114,8 +115,39 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
         }
     }
 
+    const updateDiet = async (value: DietType) => {
+        if (!userData) return
+
+        setUpdating(true)
+        try {
+            const response = await fetch(`/api/nfc/${uuid}/update`, {
+                method: "PATCH",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({diet: value}),
+            })
+            if (!response.ok) {
+                const error = await response.json()
+                // noinspection ExceptionCaughtLocallyJS
+                throw new Error(error.error || "Failed to update diet")
+            }
+
+            // Update local state
+            setUserData({
+                ...userData,
+                profile: {
+                    ...userData.profile,
+                    diet: value,
+                },
+            })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to update diet")
+        } finally {
+            setUpdating(false)
+        }
+    }
+
     const copyUUID = () => {
-        navigator.clipboard.writeText(uuid)
+        navigator.clipboard.writeText(uuid).catch(console.error)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
     }
@@ -141,6 +173,7 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
 
     const canUpdateBags = userRole === "security" || userRole === "admin"
     const canUpdateAttendance = userRole === "security" || userRole === "admin"
+    const canUpdateDiet = userRole === "admin"
 
     return (
         <div className="min-h-screen bg-muted/30 p-4">
@@ -206,9 +239,25 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                             <div className="flex items-center gap-2">
                                 <Utensils className="h-4 w-4 text-muted-foreground"/>
                                 <span className="text-sm font-medium">Diet:</span>
-                                <Badge variant={userData.profile.diet === "veg" ? "secondary" : "outline"}>
-                                    {userData.profile.diet === "veg" ? "Vegetarian" : "Non-Vegetarian"}
-                                </Badge>
+                                {canUpdateDiet ? (
+                                    <Select
+                                        value={userData.profile.diet}
+                                        onValueChange={(value) => updateDiet(value as DietType)}
+                                        disabled={updating}
+                                    >
+                                        <SelectTrigger className="w-40 h-7">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="veg">Vegetarian</SelectItem>
+                                            <SelectItem value="nonveg">Non-Vegetarian</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Badge variant={userData.profile.diet === "veg" ? "secondary" : "outline"}>
+                                        {userData.profile.diet === "veg" ? "Vegetarian" : "Non-Vegetarian"}
+                                    </Badge>
+                                )}
                             </div>
 
                             {userData.profile.allergens && (

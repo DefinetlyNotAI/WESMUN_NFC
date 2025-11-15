@@ -13,7 +13,7 @@ interface UpdateUserRequest {
     attendance?: boolean
 }
 
-export async function PATCH(request: NextRequest, {params}: { params: { userId: string } }) {
+export async function PATCH(request: NextRequest, {params}: { params: Promise<{ userId: string }> }) {
     try {
         const user = await getCurrentUser()
 
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
             return NextResponse.json({error: "Forbidden"}, {status: 403})
         }
 
-        const {userId} = params
+        const {userId} = await params
 
         console.log("[WESMUN] Updating user:", userId)
 
@@ -109,10 +109,10 @@ export async function PATCH(request: NextRequest, {params}: { params: { userId: 
 
             if (existingProfiles.length === 0) {
                 console.log("[WESMUN] No profile found for user, creating one...")
-                // Create profile if it doesn't exist
+                // Create profile if it doesn't exist (default diet is nonveg)
                 await query(
                     "INSERT INTO profiles (user_id, diet, bags_checked, attendance, allergens) VALUES ($1, $2, $3, $4, $5)",
-                    [userId, body.diet || 'veg', body.bags_checked || false, body.attendance || false, body.allergens || null]
+                    [userId, body.diet || 'nonveg', body.bags_checked || false, body.attendance || false, body.allergens || null]
                 )
             } else {
                 profileValues.push(userId)

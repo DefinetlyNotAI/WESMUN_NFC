@@ -229,8 +229,11 @@ export function AdminPanel() {
                                         </TableHeader>
                                         <TableBody>
                                             {filteredUsers.map((user) => {
-                                                const isEmergencyAdmin = user.name === EMERGENCY_ADMIN
+                                                const isEmergencyAdmin = user.email === process.env.NEXT_PUBLIC_EMERGENCY_ADMIN_EMAIL || user.name === EMERGENCY_ADMIN
                                                 const isAdmin = user.role.name === "admin"
+                                                const isWesmunEmail = user.email.toLowerCase().endsWith("@wesmun.com")
+                                                const canChangeRole = isWesmunEmail && !isEmergencyAdmin
+
                                                 return (
                                                     <TableRow key={user.id}>
                                                         <TableCell>
@@ -259,7 +262,7 @@ export function AdminPanel() {
                                                                 onValueChange={(value) =>
                                                                     updateUserRole(user.id, value as UserRole, user.name)
                                                                 }
-                                                                disabled={updating === user.id || isEmergencyAdmin}
+                                                                disabled={updating === user.id || !canChangeRole}
                                                             >
                                                                 <SelectTrigger className="w-32">
                                                                     <SelectValue />
@@ -271,6 +274,16 @@ export function AdminPanel() {
                                                                     <SelectItem value="admin">Admin</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
+                                                            {!canChangeRole && !isEmergencyAdmin && (
+                                                                <p className="text-xs text-muted-foreground mt-1">
+                                                                    @wesmun.com only
+                                                                </p>
+                                                            )}
+                                                            {isEmergencyAdmin && (
+                                                                <p className="text-xs text-orange-600 mt-1">
+                                                                    Emergency Admin
+                                                                </p>
+                                                            )}
                                                         </TableCell>
 
                                                         <TableCell>
@@ -326,7 +339,7 @@ export function AdminPanel() {
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     onClick={() => deleteUser(user.id, user.role.name)}
-                                                                    disabled={updating === user.id || isAdmin}
+                                                                    disabled={updating === user.id || isAdmin || isEmergencyAdmin}
                                                                     className="transition-all duration-200 hover:scale-105 active:scale-95"
                                                                 >
                                                                     <Trash2 className="h-4 w-4 text-destructive" />

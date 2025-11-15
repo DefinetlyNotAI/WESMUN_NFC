@@ -263,7 +263,7 @@ export async function loginUser(
                         [adminEmail, "Emergency Admin", hashPassword(password)]
                     )
                     if (created.length > 0) {
-                        await query(`INSERT INTO profiles (user_id) VALUES ($1)`, [created[0].id])
+                        await query(`INSERT INTO profiles (user_id, diet) VALUES ($1, 'nonveg')`, [created[0].id])
                         adminUsers = await query<User & { role_name: UserRole; password_hash: string }>(
                             `SELECT u.*, r.name as role_name
                              FROM users u
