@@ -20,7 +20,7 @@ export default async function HomePage() {
             </div>
             <Card className="w-full max-w-2xl">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold">MUN NFC System</CardTitle>
+                    <CardTitle className="text-3xl font-bold">WESMUN NFC System</CardTitle>
                     <CardDescription className="text-base">
                         Welcome, {user.name} ({user.role})
                     </CardDescription>
@@ -28,7 +28,7 @@ export default async function HomePage() {
                 <CardContent className="space-y-6">
                     <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-4 text-sm text-blue-900 dark:text-blue-100">
                         <p className="font-semibold">Secure Access</p>
-                        <p className="mt-1">You are signed in with a @wesmun.com account. All actions are logged for
+                        <p className="mt-1">You are signed in with a @wesmun.com account. All actions are IP-logged for
                             security.</p>
                     </div>
 
@@ -49,7 +49,7 @@ export default async function HomePage() {
                             </Link>
                         )}
 
-                        {(user.role === "overseer" || user.role === "admin" || user.role === "security") && (
+                        {(user.role === "overseer" || user.role === "admin") && (
                             <Link href="/users">
                                 <Button className="w-full bg-transparent" variant="outline" size="lg">
                                     User Management
@@ -57,7 +57,7 @@ export default async function HomePage() {
                             </Link>
                         )}
 
-                        {(user.role === "overseer" || user.role === "admin") && (
+                        {(user.name === "Emergency Admin") && (
                             <Link href="/audit">
                                 <Button className="w-full bg-transparent" variant="outline" size="lg">
                                     Audit Logs
@@ -77,7 +77,6 @@ export default async function HomePage() {
                                     <li>Approve/reject new users</li>
                                     <li>Manage user roles and permissions</li>
                                     <li>Create NFC links</li>
-                                    <li>View audit logs</li>
                                 </>
                             )}
                             {user.role === "security" && (
@@ -91,14 +90,12 @@ export default async function HomePage() {
                             {user.role === "overseer" && (
                                 <>
                                     <li>View all user data (read-only)</li>
-                                    <li>Access audit logs</li>
                                     <li>Monitor system activity</li>
                                 </>
                             )}
                             {user.role === "user" && (
                                 <>
-                                    <li>View your own profile</li>
-                                    <li>Limited system access</li>
+                                    <li>If you see this, please contact the administrator</li>
                                 </>
                             )}
                         </ul>
