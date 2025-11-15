@@ -5,7 +5,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Badge} from "@/components/ui/badge"
-import {AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle} from "lucide-react"
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle } from 'lucide-react'
 import Link from "next/link"
 import type {DietType, UserRole} from "@/lib/types/database"
 
@@ -86,7 +86,7 @@ export function UsersView() {
                     <CardHeader>
                         <CardTitle>All Users</CardTitle>
                         <CardDescription>View all registered attendees and their status</CardDescription>
-                        <div className="relative">
+                        <div className="relative mt-4">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
                             <Input
                                 placeholder="Search by name or email..."
@@ -126,23 +126,31 @@ export function UsersView() {
                                                     <p className="text-sm text-muted-foreground">{user.email}</p>
 
                                                     <div className="mt-3 flex flex-wrap gap-3">
-                                                        <div className="flex items-center gap-1.5 text-sm">
-                                                            {user.profile.bags_checked ? (
-                                                                <CheckCircle2 className="h-4 w-4 text-green-600"/>
-                                                            ) : (
-                                                                <XCircle className="h-4 w-4 text-muted-foreground"/>
-                                                            )}
-                                                            <span className="text-muted-foreground">Bags</span>
-                                                        </div>
+                                                        {user.role.name !== "admin" && user.role.name !== "security" && user.role.name !== "overseer" ? (
+                                                            <>
+                                                                <div className="flex items-center gap-1.5 text-sm">
+                                                                    {user.profile.bags_checked ? (
+                                                                        <CheckCircle2 className="h-4 w-4 text-green-600"/>
+                                                                    ) : (
+                                                                        <XCircle className="h-4 w-4 text-muted-foreground"/>
+                                                                    )}
+                                                                    <span className="text-muted-foreground">Bags Checked</span>
+                                                                </div>
 
-                                                        <div className="flex items-center gap-1.5 text-sm">
-                                                            {user.profile.attendance ? (
-                                                                <CheckCircle2 className="h-4 w-4 text-green-600"/>
-                                                            ) : (
-                                                                <XCircle className="h-4 w-4 text-muted-foreground"/>
-                                                            )}
-                                                            <span className="text-muted-foreground">Attendance</span>
-                                                        </div>
+                                                                <div className="flex items-center gap-1.5 text-sm">
+                                                                    {user.profile.attendance ? (
+                                                                        <CheckCircle2 className="h-4 w-4 text-green-600"/>
+                                                                    ) : (
+                                                                        <XCircle className="h-4 w-4 text-muted-foreground"/>
+                                                                    )}
+                                                                    <span className="text-muted-foreground">Attendance</span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <Badge variant="secondary" className="text-xs">
+                                                                No status tracking
+                                                            </Badge>
+                                                        )}
 
                                                         <div className="flex items-center gap-1.5 text-sm">
                                                             <Utensils className="h-4 w-4 text-muted-foreground"/>

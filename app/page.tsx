@@ -1,8 +1,9 @@
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
+import {ThemeToggle} from "@/components/ui/theme-toggle"
 import {getCurrentUser} from "@/lib/session"
 import Link from "next/link"
-import {redirect} from "next/navigation"
+import { redirect } from 'next/navigation'
 
 export default async function HomePage() {
     const user = await getCurrentUser()
@@ -12,7 +13,10 @@ export default async function HomePage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+            <div className="absolute top-4 right-4">
+                <ThemeToggle/>
+            </div>
             <Card className="w-full max-w-2xl">
                 <CardHeader className="text-center">
                     <CardTitle className="text-3xl font-bold">MUN NFC System</CardTitle>
@@ -21,7 +25,7 @@ export default async function HomePage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="rounded-lg border bg-blue-50 p-4 text-sm text-blue-900">
+                    <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-4 text-sm text-blue-900 dark:text-blue-100">
                         <p className="font-semibold">Secure Access</p>
                         <p className="mt-1">You are signed in with a @wesmun.com account. All actions are logged for
                             security.</p>
@@ -67,9 +71,9 @@ export default async function HomePage() {
                         </form>
                     </div>
 
-                    <div className="rounded-lg border bg-slate-50 p-4 text-sm">
-                        <p className="font-semibold text-slate-900">Your Role: {user.role}</p>
-                        <ul className="mt-2 list-inside list-disc space-y-1 text-slate-700">
+                    <div className="rounded-lg border bg-slate-50 dark:bg-slate-900 p-4 text-sm">
+                        <p className="font-semibold text-slate-900 dark:text-slate-100">Your Role: {user.role}</p>
+                        <ul className="mt-2 list-inside list-disc space-y-1 text-slate-700 dark:text-slate-300">
                             {user.role === "admin" && (
                                 <>
                                     <li>Full system access</li>

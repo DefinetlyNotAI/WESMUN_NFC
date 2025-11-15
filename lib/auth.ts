@@ -57,7 +57,7 @@ export async function createSession(userId: string): Promise<string> {
     try {
         const token = generateSessionToken()
         const tokenHash = hashSessionToken(token)
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+        const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days
 
         await query(
             `INSERT INTO session_tokens (user_id, token_hash, expires_at)
@@ -154,6 +154,69 @@ export async function registerUser(
     }
 }
 
+export async function createDataOnlyUser(
+    email: string,
+    name: string,
+    actorId: string
+): Promise<{ success: boolean; message: string; user?: any }> {
+    try {
+        const existingUsers = await query<User>(`SELECT * FROM users WHERE email = $1`, [email])
+        if (existingUsers.length > 0) {
+            return { success: false, message: "User already exists" }
+        }
+
+        // Data-only users don't have passwords and are pre-approved
+        const users = await query<User>(
+            `INSERT INTO users (email, name, password_hash, approval_status, role_id)
+             VALUES ($1, $2, $3, 'approved', 1)
+             RETURNING *`,
+            [email, name, ""] // Empty password hash for data-only users
+        )
+
+        if (users.length === 0) {
+            return { success: false, message: "User creation failed" }
+        }
+
+        try {
+            await query(`INSERT INTO profiles (user_id) VALUES ($1)`, [users[0].id])
+        } catch (profileError) {
+            console.error("[WESMUN] Profile creation failed:", profileError)
+        }
+
+        // Generate NFC link for the user
+        const nfcLinks = await query<any>(
+            `INSERT INTO nfc_links (user_id, uuid)
+             VALUES ($1, $2)
+             RETURNING uuid`,
+            [users[0].id, `${Math.random().toString(36).substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`]
+        )
+
+        try {
+            await createAuditLog({
+                actorId,
+                action: "create_data_only_user",
+                details: { email, name, userId: users[0].id },
+            })
+        } catch (auditError) {
+            console.error("[WESMUN] Audit log failed:", auditError)
+        }
+
+        return {
+            success: true,
+            message: "Data-only user created successfully",
+            user: {
+                id: users[0].id,
+                email: users[0].email,
+                name: users[0].name,
+                nfcUuid: nfcLinks[0]?.uuid
+            }
+        }
+    } catch (error) {
+        console.error("[WESMUN] createDataOnlyUser failed:", error)
+        return { success: false, message: "User creation failed due to internal error" }
+    }
+}
+
 /* -------------------- EMERGENCY ADMIN -------------------- */
 
 export async function isEmergencyAdminCredentials(email: string, password: string): Promise<boolean> {
@@ -238,8 +301,9 @@ export async function loginUser(
             }
         }
 
-        // Standard login
-        if (!isValidWesmunEmail(email)) return { success: false, message: "Invalid email domain" }
+        if (!isValidWesmunEmail(email)) {
+            return { success: false, message: "Data-only accounts cannot sign in. Please contact your administrator." }
+        }
 
         // Rate limit check
         try {
