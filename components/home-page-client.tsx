@@ -36,7 +36,7 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
     }, [user.role])
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+        <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black p-4">
             <DebugMode currentRole={user.role} isEmergencyAdmin={isEmergencyAdmin} />
 
             <div className="absolute top-4 right-4">
@@ -51,7 +51,7 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-4 text-sm text-blue-900 dark:text-blue-100">
+                    <div className="rounded-lg border bg-blue-50 dark:bg-black p-4 text-sm text-blue-900 dark:text-blue-100">
                         <p className="font-semibold">Secure Access</p>
                         <p className="mt-1">You are signed in with a @wesmun.com account. All actions are IP-logged for
                             security.</p>
@@ -93,9 +93,9 @@ export function HomePageClient({ user, isEmergencyAdmin }: HomePageClientProps) 
                         <LogoutButton />
                     </div>
 
-                    <div className="rounded-lg border bg-slate-50 dark:bg-slate-900 p-4 text-sm">
-                        <p className="font-semibold text-slate-900 dark:text-slate-100">Your Role: {effectiveRole}</p>
-                        <ul className="mt-2 list-inside list-disc space-y-1 text-slate-700 dark:text-slate-300">
+                    <div className="rounded-lg border bg-slate-50 dark:bg-black p-4 text-sm">
+                        <p className="font-semibold text-slate-900 dark:text-white">Your Role: {effectiveRole}</p>
+                        <ul className="mt-2 list-inside list-disc space-y-1 text-slate-700 dark:text-gray-300">
                             {effectiveRole === "admin" && (
                                 <>
                                     <li>Full system access</li>
