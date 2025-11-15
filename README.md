@@ -6,7 +6,6 @@ A comprehensive NFC-based user management system for Model United Nations events
 
 - **NFC Card Integration**: Unique UUID-based NFC cards for each user
 - **Role-Based Access Control**: Four distinct roles (User, Security, Overseer, Admin)
-- **Google OAuth Authentication**: Secure sign-in with NextAuth
 - **Real-time Status Tracking**: Bags checked, attendance, dietary preferences, and allergens
 - **Comprehensive Audit Logging**: Complete activity trail of all system actions
 - **Mobile-First Design**: Optimized for security personnel on mobile devices
@@ -16,7 +15,6 @@ A comprehensive NFC-based user management system for Model United Nations events
 - **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript
 - **Database**: PostgreSQL (via Neon)
-- **Authentication**: NextAuth with Google OAuth
 - **Styling**: Tailwind CSS v4 with shadcn/ui components
 - **Deployment**: Vercel
 
@@ -118,7 +116,7 @@ The system uses five main tables:
 - HTTP-only cookies for session management
 - Role-based permission checks on all API routes
 - Complete audit logging with IP addresses
-- CSRF protection via NextAuth
+- CSRF protection
 - 204 responses for unauthenticated NFC scans
 
 ## Deployment

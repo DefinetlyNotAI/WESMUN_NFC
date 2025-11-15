@@ -1,5 +1,6 @@
 import {Pool} from "pg"
 import fs from 'fs';
+import path from "path";
 
 const DATABASE_URL = process.env.DATABASE_URL
 
@@ -7,24 +8,54 @@ if (!DATABASE_URL) {
     throw new Error("DATABASE_URL environment variable is not set")
 }
 
-console.log("[WESMUN] Initializing database pool with URL:", DATABASE_URL?.substring(0, 50) + "...")
+console.log("[WESMUN] Initializing database pool with URL")
+const caPath = path.resolve(process.cwd(), 'certs', 'ca.pem');
+
+// Read CA file content
+const caContent = fs.readFileSync(caPath, 'utf8');
+console.log("[WESMUN] CA file content loaded");
 
 // Create connection pool
 const pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString: DATABASE_URL, // Use the connection string as is from the environment
     ssl: {
-        rejectUnauthorized: true,
-        ca: fs.readFileSync('certs/ca.pem').toString(),
+        rejectUnauthorized: false, // Allow self-signed certificates
+        ca: caContent,
     },
-})
+});
 
-// Log pool events
-pool.on("error", (err) => {
+// Log pool events and ensure handlers always run; add process-level cleanup
+const logPoolError = (err: Error) => {
     console.error("[WESMUN] Unexpected error on idle client", err)
-})
+}
+pool.on("error", logPoolError)
 
 pool.on("connect", () => {
     console.log("[WESMUN] New client connected to database")
+})
+
+// Ensure process-level handlers run and gracefully close the pool
+const shutdown = async (signal?: string) => {
+    console.log(`[WESMUN] Shutting down${signal ? ` due to ${signal}` : ""}...`)
+    try {
+        await pool.end()
+        console.log("[WESMUN] Database pool closed")
+    } catch (e) {
+        console.error("[WESMUN] Error during pool shutdown", e)
+    } finally {
+        if (signal) process.exit(0)
+    }
+}
+
+process.on("SIGINT", () => shutdown("SIGINT"))
+process.on("SIGTERM", () => shutdown("SIGTERM"))
+process.on("uncaughtException", (err) => {
+    console.error("[WESMUN] Uncaught Exception", err)
+    shutdown().catch(console.error)
+})
+process.on("unhandledRejection", (reason) => {
+    console.error("[WESMUN] Unhandled Rejection", reason)
+    shutdown().catch(console.error)
 })
 
 export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
