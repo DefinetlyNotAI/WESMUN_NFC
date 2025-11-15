@@ -5,9 +5,10 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Badge} from "@/components/ui/badge"
-import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Search, Utensils, XCircle, Edit2, RefreshCw } from 'lucide-react'
 import Link from "next/link"
 import type {DietType, UserRole} from "@/lib/types/database"
+import {UserEditDialog} from "./user-edit-dialog"
 
 interface User {
     id: string
@@ -34,9 +35,12 @@ export function UsersView() {
     const [filteredUsers, setFilteredUsers] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
+    const [editingUser, setEditingUser] = useState<User | null>(null)
+    const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null)
 
     useEffect(() => {
-        fetchUsers().catch(console.error)
+        getCurrentUserRole()
+        fetchUsers()
     }, [])
 
     useEffect(() => {
@@ -49,6 +53,18 @@ export function UsersView() {
             )
         }
     }, [searchQuery, users])
+
+    const getCurrentUserRole = async () => {
+        try {
+            const response = await fetch("/api/auth/validate")
+            if (response.ok) {
+                const data = await response.json()
+                setCurrentUserRole(data.user?.role)
+            }
+        } catch (error) {
+            console.error("Error fetching user role:", error)
+        }
+    }
 
     const fetchUsers = async () => {
         try {
@@ -72,15 +88,29 @@ export function UsersView() {
         )
     }
 
+    const isAdmin = currentUserRole === "admin"
+
     return (
         <div className="min-h-screen bg-muted/30 p-4">
             <div className="container mx-auto max-w-6xl space-y-4">
-                <Link href="/">
-                    <Button variant="ghost" size="sm">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
-                        Back to Dashboard
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <Link href="/">
+                        <Button variant="ghost" size="sm" className="transition-all duration-200 hover:scale-105 active:scale-95">
+                            <ArrowLeft className="mr-2 h-4 w-4"/>
+                            Back to Dashboard
+                        </Button>
+                    </Link>
+                    <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={fetchUsers}
+                        disabled={loading}
+                        className="transition-all duration-200 hover:scale-105 active:scale-95"
+                    >
+                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
+                        Refresh
                     </Button>
-                </Link>
+                </div>
 
                 <Card>
                     <CardHeader>
@@ -169,11 +199,23 @@ export function UsersView() {
                                                 </div>
                                             </div>
 
-                                            {user.nfc_link && (
-                                                <Badge variant="secondary" className="font-mono text-xs">
-                                                    {user.nfc_link.scan_count} scans
-                                                </Badge>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {isAdmin && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => setEditingUser(user)}
+                                                        className="transition-all duration-200 hover:scale-105 active:scale-95"
+                                                    >
+                                                        <Edit2 className="h-4 w-4"/>
+                                                    </Button>
+                                                )}
+                                                {user.nfc_link && (
+                                                    <Badge variant="secondary" className="font-mono text-xs">
+                                                        {user.nfc_link.scan_count} scans
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -187,6 +229,13 @@ export function UsersView() {
                     </CardContent>
                 </Card>
             </div>
+
+            <UserEditDialog
+                open={!!editingUser}
+                user={editingUser}
+                onOpenChange={(open) => !open && setEditingUser(null)}
+                onSave={fetchUsers}
+            />
         </div>
     )
 }

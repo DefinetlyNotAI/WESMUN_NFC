@@ -30,10 +30,27 @@ export function SecurityCreateUsers() {
     const [loading, setLoading] = useState(false)
     const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([])
     const [error, setError] = useState("")
+    const [copied, setCopied] = useState<string | null>(null)
+
+    const validateEmail = (email: string): string | null => {
+        if (!email) return "Email is required"
+        if (!email.includes("@")) return "Invalid email format"
+        if (!email.includes(".")) return "Invalid email domain"
+        return null
+    }
+
+    const validateName = (name: string): string | null => {
+        if (!name || !name.trim()) return "Name is required"
+        if (name.trim().length < 2) return "Name must be at least 2 characters"
+        return null
+    }
 
     const createSingleUser = async () => {
-        if (!singleEmail || !singleName) {
-            setError("Email and name are required")
+        const emailError = validateEmail(singleEmail)
+        const nameError = validateName(singleName)
+
+        if (emailError || nameError) {
+            setError(emailError || nameError || "Invalid input")
             return
         }
 
@@ -44,18 +61,18 @@ export function SecurityCreateUsers() {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    email: singleEmail,
-                    name: singleName
+                    email: singleEmail.trim(),
+                    name: singleName.trim()
                 })
             })
 
+            const data = await response.json()
+
             if (!response.ok) {
-                const data = await response.json()
-                setError(data.error || "Failed to create user")
+                setError(data.error || data.message || "Failed to create user")
                 return
             }
 
-            const data = await response.json()
             setCreatedUsers([{
                 email: singleEmail,
                 success: true,
@@ -86,6 +103,20 @@ export function SecurityCreateUsers() {
             })
             .filter(u => u.email && u.name)
 
+        const invalidUsers: string[] = []
+        users.forEach((u, idx) => {
+            const emailErr = validateEmail(u.email)
+            const nameErr = validateName(u.name)
+            if (emailErr || nameErr) {
+                invalidUsers.push(`Row ${idx + 1}: ${emailErr || nameErr}`)
+            }
+        })
+
+        if (invalidUsers.length > 0) {
+            setError(`Validation errors:\n${invalidUsers.join("\n")}`)
+            return
+        }
+
         if (users.length === 0) {
             setError("No valid users found in CSV")
             return
@@ -94,19 +125,19 @@ export function SecurityCreateUsers() {
         setLoading(true)
         setError("")
         try {
-            const response = await fetch("/api/users/undefined/bulk-create", {
+            const response = await fetch("/api/users/create-data-only/bulk", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({users})
             })
 
+            const data = await response.json()
+
             if (!response.ok) {
-                const data = await response.json()
-                setError(data.error || "Failed to create users")
+                setError(data.error || data.message || "Failed to create users")
                 return
             }
 
-            const data = await response.json()
             setCreatedUsers(data.results)
             setBulkData("")
         } catch (err) {
@@ -114,6 +145,12 @@ export function SecurityCreateUsers() {
         } finally {
             setLoading(false)
         }
+    }
+
+    const copyToClipboard = (text: string, id: string) => {
+        navigator.clipboard.writeText(text)
+        setCopied(id)
+        setTimeout(() => setCopied(null), 2000)
     }
 
     return (
@@ -140,6 +177,7 @@ export function SecurityCreateUsers() {
                                         type="email"
                                         value={singleEmail}
                                         onChange={(e) => setSingleEmail(e.target.value)}
+                                        aria-invalid={error ? "true" : "false"}
                                     />
                                 </div>
 
@@ -150,10 +188,11 @@ export function SecurityCreateUsers() {
                                         placeholder="John Doe"
                                         value={singleName}
                                         onChange={(e) => setSingleName(e.target.value)}
+                                        aria-invalid={error ? "true" : "false"}
                                     />
                                 </div>
 
-                                <Button onClick={createSingleUser} disabled={loading}>
+                                <Button onClick={createSingleUser} disabled={loading} className="transition-all duration-200 hover:scale-105 active:scale-95">
                                     {loading ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
@@ -178,10 +217,11 @@ export function SecurityCreateUsers() {
                                     value={bulkData}
                                     onChange={(e) => setBulkData(e.target.value)}
                                     rows={6}
+                                    aria-invalid={error ? "true" : "false"}
                                 />
                             </div>
 
-                            <Button onClick={createBulkUsers} disabled={loading}>
+                            <Button onClick={createBulkUsers} disabled={loading} className="transition-all duration-200 hover:scale-105 active:scale-95">
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
@@ -210,7 +250,7 @@ export function SecurityCreateUsers() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Created Users</CardTitle>
-                        <CardDescription>Share the NFC UUID with security to add to cards</CardDescription>
+                        <CardDescription>Share the NFC link with security to add to cards</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -227,7 +267,7 @@ export function SecurityCreateUsers() {
                                         </div>
                                         {result.user && (
                                             <div className="text-xs text-muted-foreground mt-1 break-all font-mono">
-                                                UUID: {result.user.nfcUuid}
+                                                Link: {`${typeof window !== 'undefined' ? window.location.origin : ''}/nfc/${result.user.nfcUuid}`}
                                             </div>
                                         )}
                                     </div>
@@ -236,10 +276,12 @@ export function SecurityCreateUsers() {
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                                navigator.clipboard.writeText(result.user?.nfcUuid || "").catch(console.error);
+                                                const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/nfc/${result.user?.nfcUuid}`
+                                                copyToClipboard(link, result.user?.nfcUuid || "No UUID Associated with user, Report to administrator")
                                             }}
+                                            className="transition-all duration-200 hover:scale-105 active:scale-95"
                                         >
-                                            <Copy className="h-3 w-3"/>
+                                            <Copy className={`h-3 w-3 transition-colors ${copied === result.user.nfcUuid ? 'text-green-600' : ''}`}/>
                                         </Button>
                                     )}
                                 </div>

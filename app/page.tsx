@@ -4,6 +4,7 @@ import {ThemeToggle} from "@/components/ui/theme-toggle"
 import {getCurrentUser} from "@/lib/session"
 import Link from "next/link"
 import { redirect } from 'next/navigation'
+import LogoutButton from "@/components/auth/sign-out-handler";
 
 export default async function HomePage() {
     const user = await getCurrentUser()
@@ -64,11 +65,7 @@ export default async function HomePage() {
                             </Link>
                         )}
 
-                        <form action="/api/auth/logout" method="POST">
-                            <Button type="submit" variant="ghost" className="w-full" size="lg">
-                                Sign Out
-                            </Button>
-                        </form>
+                        <LogoutButton />
                     </div>
 
                     <div className="rounded-lg border bg-slate-50 dark:bg-slate-900 p-4 text-sm">
