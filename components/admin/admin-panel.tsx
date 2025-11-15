@@ -1,15 +1,15 @@
 "use client"
 
-import React, {useEffect, useState} from "react"
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
-import {Button} from "@/components/ui/button"
-import {Badge} from "@/components/ui/badge"
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {ArrowLeft, CheckCircle2, Loader2, Trash2, UserPlus, XCircle} from "lucide-react"
+import React, { useEffect, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ArrowLeft, CheckCircle2, Loader2, Trash2, UserPlus, XCircle } from "lucide-react"
 import Link from "next/link"
-import type {UserRole} from "@/lib/types/database"
-import {PendingApprovals} from "./pending-approvals"
+import type { UserRole } from "@/lib/types/database"
+import { PendingApprovals } from "./pending-approvals"
 
 interface User {
     id: string
@@ -39,19 +39,20 @@ interface StatusIconProps {
 
 const StatusIcon: React.FC<StatusIconProps> = ({ active, activeLabel, inactiveLabel }) => (
     <span title={active ? activeLabel : inactiveLabel}>
-    {active ? (
-        <CheckCircle2 className="h-4 w-4 text-green-600" />
-    ) : (
-        <XCircle className="h-4 w-4 text-muted-foreground" />
-    )}
-  </span>
+        {active ? (
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+        ) : (
+            <XCircle className="h-4 w-4 text-muted-foreground" />
+        )}
+    </span>
 )
-
 
 export function AdminPanel() {
     const [users, setUsers] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState<string | null>(null)
+
+    const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 
     useEffect(() => {
         fetchUsers().catch(console.error)
@@ -66,12 +67,16 @@ export function AdminPanel() {
         setLoading(false)
     }
 
-    const updateUserRole = async (userId: string, newRole: UserRole) => {
+    const updateUserRole = async (userId: string, newRole: UserRole, username?: string) => {
+        if (username === EMERGENCY_ADMIN) {
+            alert("Cannot change the role of the emergency admin.")
+            return
+        }
         setUpdating(userId)
         const response = await fetch(`/api/users/${userId}`, {
             method: "PATCH",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({role: newRole}),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role: newRole }),
         })
         if (!response.ok) throw new Error("Failed to update role")
         await fetchUsers()
@@ -82,8 +87,8 @@ export function AdminPanel() {
         setUpdating(userId)
         const response = await fetch("/api/nfc-links", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({userId}),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
         })
         if (!response.ok) {
             const error = await response.json()
@@ -93,11 +98,13 @@ export function AdminPanel() {
         setUpdating(null)
     }
 
-    const deleteUser = async (userId: string) => {
+    const deleteUser = async (userId: string, role?: UserRole) => {
+        if (role === "admin") {
+            alert("Cannot delete an admin user.")
+            return
+        }
         setUpdating(userId)
-        const response = await fetch(`/api/users/${userId}`, {
-            method: "DELETE",
-        })
+        const response = await fetch(`/api/users/${userId}`, { method: "DELETE" })
         if (!response.ok) throw new Error("Failed to delete user")
         await fetchUsers()
         setUpdating(null)
@@ -106,7 +113,7 @@ export function AdminPanel() {
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         )
     }
@@ -116,12 +123,12 @@ export function AdminPanel() {
             <div className="container mx-auto max-w-7xl space-y-4">
                 <Link href="/">
                     <Button variant="ghost" size="sm">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Dashboard
                     </Button>
                 </Link>
 
-                <PendingApprovals/>
+                <PendingApprovals />
 
                 <Card>
                     <CardHeader>
@@ -141,88 +148,97 @@ export function AdminPanel() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {users.map((user) => (
-                                        <TableRow key={user.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    {user.image ? (
-                                                        <img
-                                                            src={user.image || "/wesmun.svg"}
-                                                            alt={user.name}
-                                                            className="h-8 w-8 rounded-full"
-                                                        />
-                                                    ) : (
-                                                        <div
-                                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
-                                                            {user.name.charAt(0)}
+                                    {users.map((user) => {
+                                        const isEmergencyAdmin = user.name === EMERGENCY_ADMIN
+                                        const isAdmin = user.role.name === "admin"
+                                        return (
+                                            <TableRow key={user.id}>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        {user.image ? (
+                                                            <img
+                                                                src={user.image || "/wesmun.svg"}
+                                                                alt={user.name}
+                                                                className="h-8 w-8 rounded-full"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
+                                                                {user.name.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <p className="text-sm font-medium">{user.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{user.email}</p>
                                                         </div>
-                                                    )}
-                                                    <div>
-                                                        <p className="text-sm font-medium">{user.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{user.email}</p>
                                                     </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Select
-                                                    value={user.role.name}
-                                                    onValueChange={(value) => updateUserRole(user.id, value as UserRole)}
-                                                    disabled={updating === user.id}
-                                                >
-                                                    <SelectTrigger className="w-32">
-                                                        <SelectValue/>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="user">User</SelectItem>
-                                                        <SelectItem value="security">Security</SelectItem>
-                                                        <SelectItem value="overseer">Overseer</SelectItem>
-                                                        <SelectItem value="admin">Admin</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-2">
-                                                    <StatusIcon
-                                                        active={user.profile.bags_checked}
-                                                        activeLabel="Bags checked"
-                                                        inactiveLabel="Bags not checked"
-                                                    />
-                                                    <StatusIcon
-                                                        active={user.profile.attendance}
-                                                        activeLabel="Attendance marked"
-                                                        inactiveLabel="Attendance not marked"
-                                                    />
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {user.nfc_link ? (
-                                                    <Badge variant="secondary" className="font-mono text-xs">
-                                                        {user.nfc_link.scan_count} scans
-                                                    </Badge>
-                                                ) : (
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <Select
+                                                        value={user.role.name}
+                                                        onValueChange={(value) =>
+                                                            updateUserRole(user.id, value as UserRole, user.name)
+                                                        }
+                                                        disabled={updating === user.id || isEmergencyAdmin}
+                                                    >
+                                                        <SelectTrigger className="w-32">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="user">User</SelectItem>
+                                                            <SelectItem value="security">Security</SelectItem>
+                                                            <SelectItem value="overseer">Overseer</SelectItem>
+                                                            <SelectItem value="admin">Admin</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <StatusIcon
+                                                            active={user.profile.bags_checked}
+                                                            activeLabel="Bags checked"
+                                                            inactiveLabel="Bags not checked"
+                                                        />
+                                                        <StatusIcon
+                                                            active={user.profile.attendance}
+                                                            activeLabel="Attendance marked"
+                                                            inactiveLabel="Attendance not marked"
+                                                        />
+                                                    </div>
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {user.nfc_link ? (
+                                                        <Badge variant="secondary" className="font-mono text-xs">
+                                                            {user.nfc_link.scan_count} scans
+                                                        </Badge>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => createNfcLink(user.id)}
+                                                            disabled={updating === user.id}
+                                                        >
+                                                            <UserPlus className="mr-1 h-3 w-3" />
+                                                            Create
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
                                                     <Button
                                                         size="sm"
-                                                        variant="outline"
-                                                        onClick={() => createNfcLink(user.id)}
-                                                        disabled={updating === user.id}
+                                                        variant="ghost"
+                                                        onClick={() => deleteUser(user.id, user.role.name)}
+                                                        disabled={updating === user.id || isAdmin}
                                                     >
-                                                        <UserPlus className="mr-1 h-3 w-3"/>
-                                                        Create
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
                                                     </Button>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => deleteUser(user.id)}
-                                                    disabled={updating === user.id}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive"/>
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })}
                                 </TableBody>
                             </Table>
                         </div>
