@@ -13,7 +13,10 @@ export async function DELETE(
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
 
-        if (user.email !== process.env.EMERGENCY_ADMIN_USERNAME) {
+        const isEmergencyAdmin = user.email === process.env.EMERGENCY_ADMIN_USERNAME ||
+            user.name === "Emergency Admin"
+
+        if (!isEmergencyAdmin) {
             return NextResponse.json({error: "Forbidden"}, {status: 403})
         }
 

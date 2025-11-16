@@ -41,6 +41,7 @@ export function AuditLogsView() {
     const [total, setTotal] = useState(0)
     const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set())
     const [deleting, setDeleting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         fetchLogs()
@@ -49,12 +50,24 @@ export function AuditLogsView() {
     const fetchLogs = async () => {
         try {
             setLoading(true)
+            setError(null)
             const response = await fetch("/api/audit")
             const data = await response.json()
-            setLogs(data.logs)
-            setTotal(data.total)
+
+            if (!response.ok) {
+                setError(data.error || "Failed to fetch audit logs")
+                setLogs([])
+                setTotal(0)
+                return
+            }
+
+            setLogs(Array.isArray(data.logs) ? data.logs : [])
+            setTotal(data.total || 0)
         } catch (error) {
             console.error("[WESMUN] Failed to fetch audit logs:", error)
+            setError("An unexpected error occurred")
+            setLogs([])
+            setTotal(0)
         } finally {
             setLoading(false)
         }
@@ -165,6 +178,14 @@ export function AuditLogsView() {
                     </div>
                 </div>
 
+                {error && (
+                    <Card className="border-red-500 bg-red-50 dark:bg-red-950/20">
+                        <CardContent className="pt-6">
+                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                        </CardContent>
+                    </Card>
+                )}
+
                 <Card>
                     <CardHeader>
                         <div className="flex items-center gap-2">
@@ -176,7 +197,7 @@ export function AuditLogsView() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
-                            {logs.map((log) => {
+                            {Array.isArray(logs) && logs.map((log) => {
                                 const actionConfig = ACTION_LABELS[log.action] || {
                                     label: log.action,
                                     color: "bg-gray-500"

@@ -11,7 +11,11 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
 
-        if (!hasPermission(user.role, "canViewAuditLogs")) {
+        // Check if user is emergency admin (superadmin) or has permission
+        const isEmergencyAdmin = user.email === process.env.EMERGENCY_ADMIN_USERNAME ||
+            user.name === "Emergency Admin"
+
+        if (!isEmergencyAdmin && !hasPermission(user.role, "canViewAuditLogs")) {
             return NextResponse.json({error: "Forbidden"}, {status: 403})
         }
 
