@@ -58,11 +58,25 @@ export function ScannerView() {
                         <div className="mt-6 rounded-lg bg-muted p-4 text-sm text-muted-foreground">
                             <p className="font-medium">How to use:</p>
                             <ol className="mt-2 list-inside list-decimal space-y-1">
-                                <li>Scan the NFC card with your device</li>
-                                <li>Copy the UUID from the URL</li>
-                                <li>Paste it here to view user details</li>
+                                <li>
+                                    Using the URL
+                                    <ol className="list-inside list-decimal ml-4 mt-1 space-y-1">
+                                        <li>Scan the NFC card with your device</li>
+                                        <li>Copy the UUID from the URL</li>
+                                        <li>Paste it here to view user details</li>
+                                    </ol>
+                                </li>
+                                <li>
+                                    Using the NFC via browser
+                                    <ol className="list-inside list-decimal ml-4 mt-1 space-y-1">
+                                        <li>Grab the physical NFC card</li>
+                                        <li>Scan it using your mobile phone</li>
+                                        <li>Make sure to have NFC enabled on your phone</li>
+                                    </ol>
+                                </li>
                             </ol>
                         </div>
+
                     </CardContent>
                 </Card>
             </div>
