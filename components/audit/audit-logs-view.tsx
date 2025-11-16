@@ -7,6 +7,7 @@ import {Badge} from "@/components/ui/badge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Shield, Square, Trash2} from 'lucide-react'
 import Link from "next/link"
+import {Alert, AlertDescription} from "@/components/ui/alert"
 
 interface AuditLog {
     id: number
@@ -94,11 +95,11 @@ export function AuditLogsView() {
                 setLogs(logs.filter(l => l.id !== logId))
                 setTotal(total - 1)
             } else {
-                alert("Failed to delete log")
+                setError("Failed to delete log")
             }
         } catch (error) {
             console.error("Delete error:", error)
-            alert("Error deleting log")
+            setError("Error deleting log")
         } finally {
             setDeleting(false)
         }
@@ -121,11 +122,11 @@ export function AuditLogsView() {
                 setTotal(total - selectedLogs.size)
                 setSelectedLogs(new Set())
             } else {
-                alert("Failed to delete logs")
+                setError("Failed to delete logs")
             }
         } catch (error) {
             console.error("Bulk delete error:", error)
-            alert("Error deleting logs")
+            setError("Error deleting logs")
         } finally {
             setDeleting(false)
         }
@@ -189,11 +190,11 @@ export function AuditLogsView() {
                 </div>
 
                 {error && (
-                    <Card className="border-red-500 bg-red-50 dark:bg-red-950/20">
-                        <CardContent className="pt-6">
-                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                        </CardContent>
-                    </Card>
+                    <div className="mb-2">
+                        <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    </div>
                 )}
 
                 {/* Filter and Selection Controls */}

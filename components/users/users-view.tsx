@@ -26,6 +26,7 @@ import {copyUuid} from "@/lib/copyUUID"
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Label} from "@/components/ui/label"
+import {Alert, AlertDescription} from "@/components/ui/alert"
 
 interface User {
     id: string
@@ -61,6 +62,7 @@ export function UsersView() {
     const [filterAttendance, setFilterAttendance] = useState<string>("all")
     const [filterDiet, setFilterDiet] = useState<string>("all")
     const [exportCount, setExportCount] = useState<{filtered:number,total:number} | null>(null)
+    const [exportError, setExportError] = useState<string | null>(null)
 
     useEffect(() => {
         getCurrentUserRole().catch(console.error)
@@ -135,7 +137,7 @@ export function UsersView() {
             if (filterDiet !== "all") params.append("diet", filterDiet)
 
             const res = await fetch(`/api/users/export?${params.toString()}`)
-            if (!res.ok) {alert('Export failed'); return}
+            if (!res.ok) { setExportError('Export failed'); return }
             const blob = await res.blob()
             const dateStr = new Date().toISOString().split('T')[0]
             const ext = format === 'csv' ? 'csv' : 'pdf'
@@ -148,11 +150,13 @@ export function UsersView() {
             a.remove()
             URL.revokeObjectURL(url)
             setShowExportDialog(false)
-        } catch (e) {console.error(e); alert('Export error')}
+            setExportError(null)
+        } catch (e) { console.error(e); setExportError('Export error') }
     }
 
     const openExportDialog = (format: 'csv' | 'pdf') => {
         setExportFormat(format)
+        setExportError(null)
         setShowExportDialog(true)
     }
 
@@ -357,6 +361,14 @@ export function UsersView() {
                             Filter the export by user attributes (optional)
                         </DialogDescription>
                     </DialogHeader>
+
+                    {exportError && (
+                        <div className="mb-2">
+                            <Alert variant="destructive">
+                                <AlertDescription>{exportError}</AlertDescription>
+                            </Alert>
+                        </div>
+                    )}
 
                     <div className="space-y-4">
                         <div className="space-y-2">

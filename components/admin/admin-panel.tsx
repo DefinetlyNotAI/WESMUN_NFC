@@ -12,6 +12,7 @@ import {SecurityCreateUsers} from "./security-create-users"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {UserEditDialog} from "../users/user-edit-dialog"
 import {UserManagementSection} from "@/components/admin/user-management";
+import {Alert, AlertDescription} from "@/components/ui/alert"
 
 interface User {
     id: string
@@ -41,6 +42,7 @@ export function AdminPanel() {
     const [searchQuery, setSearchQuery] = useState("")
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [copiedUuid, setCopiedUuid] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)
 
     const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 
@@ -79,7 +81,7 @@ export function AdminPanel() {
 
     const updateUserRole = async (userId: string, newRole: UserRole, username?: string) => {
         if (username === EMERGENCY_ADMIN) {
-            alert("Cannot change the role of the emergency admin.")
+            setError("Cannot change the role of the emergency admin.")
             return
         }
         setUpdating(userId)
@@ -93,7 +95,7 @@ export function AdminPanel() {
             await fetchUsers()
         } catch (error) {
             console.error("Update error:", error)
-            alert("Failed to update user")
+            setError("Failed to update user")
         } finally {
             setUpdating(null)
         }
@@ -114,7 +116,7 @@ export function AdminPanel() {
             await fetchUsers()
         } catch (error) {
             console.error("NFC create error:", error)
-            alert("Failed to create NFC link")
+            setError("Failed to create NFC link")
         } finally {
             setUpdating(null)
         }
@@ -122,7 +124,7 @@ export function AdminPanel() {
 
     const deleteUser = async (userId: string, role?: UserRole) => {
         if (role === "admin") {
-            alert("Cannot delete an admin user.")
+            setError("Cannot delete an admin user.")
             return
         }
         if (!confirm("Are you sure you want to delete this user?")) return
@@ -133,7 +135,7 @@ export function AdminPanel() {
             await fetchUsers()
         } catch (error) {
             console.error("Delete error:", error)
-            alert("Failed to delete user")
+            setError("Failed to delete user")
         } finally {
             setUpdating(null)
         }
@@ -169,6 +171,14 @@ export function AdminPanel() {
                         Refresh
                     </Button>
                 </div>
+
+                {error && (
+                    <div className="mb-2">
+                        <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    </div>
+                )}
 
                 <Tabs defaultValue="manage-users" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">

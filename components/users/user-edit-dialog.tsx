@@ -9,6 +9,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {Loader2} from 'lucide-react'
 import type {DietType, UserRole} from "@/lib/types/database"
 import {Textarea} from "@/components/ui/textarea"
+import {Alert, AlertDescription} from "@/components/ui/alert"
 
 interface User {
     id: string
@@ -97,7 +98,7 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
         } catch (error) {
             console.error("Error updating user:", error)
             const errorMessage = error instanceof Error ? error.message : "Failed to update user"
-            alert(errorMessage)
+            setError(errorMessage)
         } finally {
             setLoading(false)
         }
@@ -116,6 +117,13 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                 </DialogHeader>
 
                 <div className="space-y-4">
+                    {/* Error */}
+                    {error && (
+                        <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+
                     {/* User Info */}
                     <div className="space-y-2">
                         <Label className="text-sm font-medium">User Info</Label>
