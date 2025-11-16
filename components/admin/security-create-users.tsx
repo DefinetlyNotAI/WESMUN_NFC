@@ -237,18 +237,15 @@ export function SecurityCreateUsers() {
                         </TabsContent>
 
                         <TabsContent value="bulk" className="space-y-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="bulk-data">CSV Data (email,name)</Label>
-                                <Textarea
-                                    id="bulk-data"
-                                    placeholder="user1@example.com,John Doe&#10;user2@example.com,Jane Smith"
-                                    value={bulkData}
-                                    onChange={(e) => setBulkData(e.target.value)}
-                                    rows={6}
-                                    aria-invalid={error ? "true" : "false"}
-                                />
-                            </div>
-
+                            <Textarea
+                                id="bulk-data"
+                                placeholder={`user1@example.com, John Doe
+user2@example.com, Jane Smith`}
+                                value={bulkData}
+                                onChange={(e) => setBulkData(e.target.value)}
+                                rows={6}
+                                aria-invalid={error ? "true" : "false"}
+                            />
                             <Button onClick={createBulkUsers} disabled={loading}
                                     className="transition-all duration-200 hover:scale-105 active:scale-95">
                                 {loading ? (
