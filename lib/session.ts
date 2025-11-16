@@ -19,7 +19,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     if (!token) return null
 
     try {
-        const response = await fetch("http://localhost:3000/api/auth/validate", {
+        const response = await fetch("/api/auth/validate", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({token}),
