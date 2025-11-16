@@ -48,6 +48,7 @@ export function AuditLogsView() {
 
     useEffect(() => {
         fetchLogs().catch(console.error)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [actionFilter])
 
     const fetchLogs = async () => {
@@ -148,13 +149,7 @@ export function AuditLogsView() {
         setSelectedLogs(new Set())
     }
 
-    if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-            </div>
-        )
-    }
+    const isInitialLoading = loading && logs.length === 0 && !error
 
     return (
         <div className="min-h-screen bg-muted/30 p-4">
@@ -173,7 +168,7 @@ export function AuditLogsView() {
                                 variant="destructive"
                                 size="sm"
                                 onClick={bulkDelete}
-                                disabled={deleting}
+                                disabled={deleting || loading}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"
                             >
                                 <Trash2 className="mr-2 h-4 w-4"/>
@@ -187,8 +182,8 @@ export function AuditLogsView() {
                             disabled={loading}
                             className="transition-all duration-200 hover:scale-105 active:scale-95"
                         >
-                            <RefreshCw className="mr-2 h-4 w-4"/>
-                            Refresh
+                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-2 h-4 w-4"/>}
+                            {loading ? "Refreshing" : "Refresh"}
                         </Button>
                     </div>
                 </div>
@@ -205,7 +200,7 @@ export function AuditLogsView() {
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
                         <label className="text-sm font-medium">Filter by Action:</label>
-                        <Select value={actionFilter} onValueChange={setActionFilter}>
+                        <Select value={actionFilter} onValueChange={setActionFilter} disabled={loading}>
                             <SelectTrigger className="w-[200px]">
                                 <SelectValue placeholder="All Actions" />
                             </SelectTrigger>
@@ -219,6 +214,9 @@ export function AuditLogsView() {
                                 <SelectItem value="nfc_link_create">NFC Link Created</SelectItem>
                             </SelectContent>
                         </Select>
+                        {loading && (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -227,6 +225,7 @@ export function AuditLogsView() {
                                 variant="outline"
                                 size="sm"
                                 onClick={deselectAll}
+                                disabled={loading}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"
                             >
                                 <Square className="mr-2 h-4 w-4"/>
@@ -237,7 +236,7 @@ export function AuditLogsView() {
                                 variant="outline"
                                 size="sm"
                                 onClick={selectAll}
-                                disabled={logs.length === 0}
+                                disabled={logs.length === 0 || loading}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"
                             >
                                 <CheckSquare className="mr-2 h-4 w-4"/>
@@ -252,86 +251,94 @@ export function AuditLogsView() {
                         <div className="flex items-center gap-2">
                             <Shield className="h-5 w-5"/>
                             <CardTitle>Audit Logs</CardTitle>
+                            {loading && <Badge variant="outline" className="ml-2">Updating…</Badge>}
                         </div>
                         <CardDescription>Complete activity trail of all system actions ({total} total
                             entries)</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-3">
-                            {Array.isArray(logs) && logs.map((log) => {
-                                const actionConfig = ACTION_LABELS[log.action] || {
-                                    label: log.action,
-                                    color: "bg-gray-500"
-                                }
+                        {isInitialLoading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <Loader2 className="h-6 w-6 animate-spin text-primary"/>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {Array.isArray(logs) && logs.map((log) => {
+                                    const actionConfig = ACTION_LABELS[log.action] || {
+                                        label: log.action,
+                                        color: "bg-gray-500"
+                                    }
 
-                                return (
-                                    <div key={log.id} className="rounded-lg border p-4 flex items-start gap-3">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedLogs.has(log.id)}
-                                            onChange={() => toggleLogSelection(log.id)}
-                                            className="mt-1 cursor-pointer"
-                                        />
-
-                                        <div
-                                            className="flex-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                            <div className="flex-1 space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`h-2 w-2 rounded-full ${actionConfig.color}`}/>
-                                                    <span className="font-medium">{actionConfig.label}</span>
-                                                    <Badge variant="outline" className="text-xs">
-                                                        #{log.id}
-                                                    </Badge>
-                                                </div>
-
-                                                <div className="space-y-1 text-sm text-muted-foreground">
-                                                    {log.actor && (
-                                                        <p>
-                                                            <span
-                                                                className="font-medium">Actor:</span> {log.actor.name} ({log.actor.email})
-                                                        </p>
-                                                    )}
-                                                    {log.target_user && (
-                                                        <p>
-                                                            <span
-                                                                className="font-medium">Target:</span> {log.target_user.name} (
-                                                            {log.target_user.email})
-                                                        </p>
-                                                    )}
-                                                    {log.details && Object.keys(log.details).length > 0 && (
-                                                        <details className="cursor-pointer">
-                                                            <summary className="font-medium">Details</summary>
-                                                            <pre
-                                                                className="mt-1 overflow-x-auto rounded bg-muted p-2 text-xs">
-                                {JSON.stringify(log.details, null, 2)}
-                              </pre>
-                                                        </details>
-                                                    )}
-                                                </div>
-                                            </div>
+                                    return (
+                                        <div key={log.id} className="rounded-lg border p-4 flex items-start gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedLogs.has(log.id)}
+                                                onChange={() => toggleLogSelection(log.id)}
+                                                className="mt-1 cursor-pointer"
+                                                disabled={loading}
+                                            />
 
                                             <div
-                                                className="flex items-center gap-2 text-right text-xs text-muted-foreground">
-                                                <p>{new Date(log.created_at).toLocaleString()}</p>
-                                                {log.ip_address && <p className="font-mono">{log.ip_address}</p>}
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => deleteLog(log.id)}
-                                                    disabled={deleting}
-                                                    className="transition-all duration-200 hover:scale-105 active:scale-95"
-                                                >
-                                                    <Trash2 className="h-3 w-3 text-red-600"/>
-                                                </Button>
+                                                className="flex-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`h-2 w-2 rounded-full ${actionConfig.color}`}/>
+                                                        <span className="font-medium">{actionConfig.label}</span>
+                                                        <Badge variant="outline" className="text-xs">
+                                                            #{log.id}
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="space-y-1 text-sm text-muted-foreground">
+                                                        {log.actor && (
+                                                            <p>
+                                                                <span
+                                                                    className="font-medium">Actor:</span> {log.actor.name} ({log.actor.email})
+                                                            </p>
+                                                        )}
+                                                        {log.target_user && (
+                                                            <p>
+                                                                <span
+                                                                    className="font-medium">Target:</span> {log.target_user.name} (
+                                                            {log.target_user.email})
+                                                            </p>
+                                                        )}
+                                                        {log.details && Object.keys(log.details).length > 0 && (
+                                                            <details className="cursor-pointer">
+                                                                <summary className="font-medium">Details</summary>
+                                                                <pre
+                                                                    className="mt-1 overflow-x-auto rounded bg-muted p-2 text-xs">
+                                {JSON.stringify(log.details, null, 2)}
+                              </pre>
+                                                            </details>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div
+                                                    className="flex items-center gap-2 text-right text-xs text-muted-foreground">
+                                                    <p>{new Date(log.created_at).toLocaleString()}</p>
+                                                    {log.ip_address && <p className="font-mono">{log.ip_address}</p>}
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => deleteLog(log.id)}
+                                                        disabled={deleting || loading}
+                                                        className="transition-all duration-200 hover:scale-105 active:scale-95"
+                                                    >
+                                                        <Trash2 className="h-3 w-3 text-red-600"/>
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )
-                            })}
+                                    )
+                                })}
 
-                            {logs.length === 0 &&
-                                <div className="py-12 text-center text-muted-foreground">No audit logs found.</div>}
-                        </div>
+                                {logs.length === 0 && !loading &&
+                                    <div className="py-12 text-center text-muted-foreground">No audit logs found.</div>}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
