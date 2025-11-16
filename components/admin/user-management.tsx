@@ -91,6 +91,9 @@ export function UserManagementSection(props: Props) {
         success: string | null
         fieldErrors: Record<string, string>
     }>({error: null, success: null, fieldErrors: {}})
+    const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false)
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+    const [bulkDeleteResult, setBulkDeleteResult] = useState<null | {deleted: number; missing: number; forbidden: number}>(null)
 
     const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 
@@ -207,8 +210,13 @@ export function UserManagementSection(props: Props) {
 
                 {selectedIds.size > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setBulkEditing(true)}>Bulk Edit
-                            ({selectedIds.size})</Button>
+                        <Button variant="outline" size="sm" onClick={() => setBulkEditing(true)}>Bulk Edit ({selectedIds.size})</Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => { if (!bulkDeleteLoading) { setBulkDeleteResult(null); setBulkDeleteOpen(true) } }}
+                            disabled={bulkDeleteLoading}
+                        >{bulkDeleteLoading ? 'Deleting...' : 'Bulk Delete'}</Button>
                         <Button variant="outline" size="sm" onClick={selectAllUsers}>Select All</Button>
                         <Button variant="ghost" size="sm" onClick={clearSelection}>Clear</Button>
                     </div>
@@ -517,6 +525,81 @@ export function UserManagementSection(props: Props) {
                         {bulkLoading ? 'Updating...' : `Apply Changes to ${selectedIds.size}`}
                     </Button>
                 </div>
+            </DialogContent>
+        </Dialog>
+
+        {/* Bulk Delete Dialog */}
+        <Dialog open={bulkDeleteOpen} onOpenChange={(open) => { if (!bulkDeleteLoading) setBulkDeleteOpen(open) }}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{bulkDeleteResult ? 'Bulk Delete Result' : `Confirm Bulk Delete (${selectedIds.size})`}</DialogTitle>
+                    <DialogDescription>
+                        {bulkDeleteResult ? (
+                            <>Operation completed. Review the summary below.</>
+                        ) : (
+                            <>You are about to permanently delete {selectedIds.size} selected user{selectedIds.size === 1 ? '' : 's'}. This action cannot be undone.</>
+                        )}
+                    </DialogDescription>
+                </DialogHeader>
+                {bulkDeleteResult ? (
+                    <div className="space-y-4">
+                        <div className="rounded-md border p-3 text-sm">
+                            <p><strong>Deleted:</strong> {bulkDeleteResult.deleted}</p>
+                            <p><strong>Forbidden (skipped):</strong> {bulkDeleteResult.forbidden}</p>
+                            <p><strong>Missing:</strong> {bulkDeleteResult.missing}</p>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                            <Button size="sm" variant="outline" onClick={() => { setBulkDeleteOpen(false); }}>{'Close'}</Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="rounded-md border p-3 text-xs text-muted-foreground">
+                            <p>Only regular <strong>user</strong> role accounts will be deleted. Admin, security, overseer, and emergency admin account's are automatically skipped.</p>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setBulkDeleteOpen(false)}
+                                disabled={bulkDeleteLoading}
+                            >Cancel</Button>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={bulkDeleteLoading || selectedIds.size === 0}
+                                onClick={async () => {
+                                    setBulkDeleteLoading(true)
+                                    try {
+                                        const res = await fetch('/api/users/bulk-delete', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userIds: Array.from(selectedIds) })
+                                        })
+                                        const data = await res.json().catch(()=>({}))
+                                        if (!res.ok) {
+                                            setBulkDeleteResult({deleted: 0, forbidden: 0, missing: 0})
+                                            console.error('[BulkDelete] failed:', data.error)
+                                        } else {
+                                            setBulkDeleteResult({
+                                                deleted: data.deleted || 0,
+                                                forbidden: (data.forbidden?.length) || 0,
+                                                missing: (data.missing?.length) || 0
+                                            })
+                                            clearSelection()
+                                            await fetchUsers()
+                                        }
+                                    } catch (e) {
+                                        console.error(e)
+                                        setBulkDeleteResult({deleted: 0, forbidden: 0, missing: 0})
+                                    } finally {
+                                        setBulkDeleteLoading(false)
+                                    }
+                                }}
+                            >{bulkDeleteLoading ? 'Deleting...' : 'Confirm Delete'}</Button>
+                        </div>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
         </>
