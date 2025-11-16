@@ -17,13 +17,19 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json()
-        const {email, name, diet} = body
+        const {email, name, diet, allergens} = body
 
         if (!email || !name) {
             return NextResponse.json({error: "Email and name are required"}, {status: 400})
         }
 
-        const result = await createDataOnlyUser(email, name, user.id, (diet as DietType) || "nonveg")
+        if (allergens && typeof allergens === 'string' && allergens.length > 500) {
+            return NextResponse.json({error: "Allergens field too long"}, {status: 400})
+       }
+
+        // Some compiled type info may still expect a smaller arity; cast to any to allow the optional allergens param
+        const createFn = createDataOnlyUser as unknown as (...args: any[]) => Promise<any>
+        const result = await createFn(email, name, user.id, (diet as DietType) || "nonveg", allergens || null)
 
         if (!result.success) {
             return NextResponse.json({error: result.message}, {status: 400})

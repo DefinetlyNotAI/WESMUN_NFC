@@ -161,7 +161,8 @@ export async function createDataOnlyUser(
     email: string,
     name: string,
     actorId: string,
-    diet: DietType = "nonveg"
+    diet: DietType = "nonveg",
+    allergens: string | null = null
 ): Promise<{ success: boolean; message: string; user?: any }> {
     try {
         const existingUsers = await query<User>(`SELECT * FROM users WHERE email = $1`, [email])
@@ -182,7 +183,7 @@ export async function createDataOnlyUser(
         }
 
         try {
-            await query(`INSERT INTO profiles (user_id, diet) VALUES ($1, $2)`, [users[0].id, diet])
+            await query(`INSERT INTO profiles (user_id, diet, allergens) VALUES ($1, $2, $3)`, [users[0].id, diet, allergens])
         } catch (profileError) {
             console.error("[WESMUN] Profile creation failed:", profileError)
         }
@@ -199,7 +200,7 @@ export async function createDataOnlyUser(
             await createAuditLog({
                 actorId,
                 action: "create_data_only_user",
-                details: {email, name, userId: users[0].id},
+                details: {email, name, userId: users[0].id, diet, allergens},
             })
         } catch (auditError) {
             console.error("[WESMUN] Audit log failed:", auditError)

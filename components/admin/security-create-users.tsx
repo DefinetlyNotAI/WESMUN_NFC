@@ -29,6 +29,7 @@ export function SecurityCreateUsers() {
     const [singleEmail, setSingleEmail] = useState("")
     const [singleName, setSingleName] = useState("")
     const [singleDiet, setSingleDiet] = useState<DietType>("nonveg")
+    const [singleAllergens, setSingleAllergens] = useState<string>("")
     const [bulkData, setBulkData] = useState("")
     const [loading, setLoading] = useState(false)
     const [createdUsers, setCreatedUsers] = useState<CreatedUser[]>([])
@@ -66,7 +67,8 @@ export function SecurityCreateUsers() {
                 body: JSON.stringify({
                     email: singleEmail.trim(),
                     name: singleName.trim(),
-                    diet: singleDiet
+                    diet: singleDiet,
+                    allergens: singleAllergens.trim() || null,
                 })
             })
 
@@ -86,6 +88,7 @@ export function SecurityCreateUsers() {
             setSingleEmail("")
             setSingleName("")
             setSingleDiet("nonveg")
+            setSingleAllergens("")
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error")
         } finally {
@@ -153,7 +156,7 @@ export function SecurityCreateUsers() {
     }
 
     const copyToClipboard = (text: string, id: string) => {
-        navigator.clipboard.writeText(text)
+        navigator.clipboard.writeText(text).catch(console.error)
         setCopied(id)
         setTimeout(() => setCopied(null), 2000)
     }
@@ -216,6 +219,22 @@ export function SecurityCreateUsers() {
                                             <SelectItem value="veg">Vegetarian</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+
+                                {/* allergens */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="single-allergens" className="flex items-center gap-2">
+                                        <Utensils className="h-4 w-4"/>
+                                        Allergens (optional)
+                                    </Label>
+                                    <Textarea
+                                        id="single-allergens"
+                                        placeholder="Peanuts, dairy, gluten, etc."
+                                        value={singleAllergens}
+                                        onChange={(e) => setSingleAllergens(e.target.value)}
+                                        rows={3}
+                                        aria-invalid={error ? "true" : "false"}
+                                    />
                                 </div>
 
                                 {/* submit button */}
