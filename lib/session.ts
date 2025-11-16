@@ -14,7 +14,16 @@ export type SessionUser = {
 
 function getBaseUrl() {
     if (typeof window !== "undefined") return "";
-    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+    const vercelUrl = process.env.VERCEL_URL;
+    const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+    if (vercelUrl) {
+        console.log("[WESMUN] Vercel URL is processed")
+        return `https://${vercelUrl}`
+    }
+    if (isProd) {
+        console.error("Missing required env var VERCEL_URL in production")
+    }
+    console.log("[WESMUN] Local URL is processed")
     return "http://localhost:3000";
 }
 
