@@ -14,16 +14,13 @@ export type SessionUser = {
 
 function getBaseUrl() {
     if (typeof window !== "undefined") return "";
-    const vercelUrl = process.env.VERCEL_URL;
-    const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
-    if (vercelUrl) {
-        console.log("[WESMUN] Vercel URL is processed")
-        return `https://${vercelUrl}`
+
+    // Always use your canonical domain in production
+    if (process.env.NODE_ENV === "production") {
+        return "https://nfc.wesmun.com";
     }
-    if (isProd) {
-        console.error("Missing required env var VERCEL_URL in production")
-    }
-    console.log("[WESMUN] Local URL is processed")
+
+    // Dev uses localhost
     return "http://localhost:3000";
 }
 
