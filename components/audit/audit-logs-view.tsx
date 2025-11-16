@@ -4,7 +4,8 @@ import {useEffect, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
-import {ArrowLeft, Loader2, RefreshCw, Shield, Trash2} from 'lucide-react'
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Shield, Square, Trash2} from 'lucide-react'
 import Link from "next/link"
 
 interface AuditLog {
@@ -42,16 +43,20 @@ export function AuditLogsView() {
     const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set())
     const [deleting, setDeleting] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [actionFilter, setActionFilter] = useState<string>("all")
 
     useEffect(() => {
         fetchLogs()
-    }, [])
+    }, [actionFilter])
 
     const fetchLogs = async () => {
         try {
             setLoading(true)
             setError(null)
-            const response = await fetch("/api/audit")
+            const url = actionFilter && actionFilter !== "all"
+                ? `/api/audit?action=${actionFilter}`
+                : "/api/audit"
+            const response = await fetch(url)
             const data = await response.json()
 
             if (!response.ok) {
@@ -63,6 +68,7 @@ export function AuditLogsView() {
 
             setLogs(Array.isArray(data.logs) ? data.logs : [])
             setTotal(data.total || 0)
+            setSelectedLogs(new Set()) // Clear selection when filter changes
         } catch (error) {
             console.error("[WESMUN] Failed to fetch audit logs:", error)
             setError("An unexpected error occurred")
@@ -133,6 +139,14 @@ export function AuditLogsView() {
         setSelectedLogs(newSelected)
     }
 
+    const selectAll = () => {
+        setSelectedLogs(new Set(logs.map(log => log.id)))
+    }
+
+    const deselectAll = () => {
+        setSelectedLogs(new Set())
+    }
+
     if (loading) {
         return (
             <div className="flex min-h-screen items-center justify-center">
@@ -185,6 +199,52 @@ export function AuditLogsView() {
                         </CardContent>
                     </Card>
                 )}
+
+                {/* Filter and Selection Controls */}
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium">Filter by Action:</label>
+                        <Select value={actionFilter} onValueChange={setActionFilter}>
+                            <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="All Actions" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Actions</SelectItem>
+                                <SelectItem value="nfc_scan">NFC Scan</SelectItem>
+                                <SelectItem value="profile_update">Profile Update</SelectItem>
+                                <SelectItem value="profile_update_admin">Admin Update</SelectItem>
+                                <SelectItem value="role_update">Role Change</SelectItem>
+                                <SelectItem value="user_delete">User Deleted</SelectItem>
+                                <SelectItem value="nfc_link_create">NFC Link Created</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {selectedLogs.size === logs.length && logs.length > 0 ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={deselectAll}
+                                className="transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                <Square className="mr-2 h-4 w-4"/>
+                                Deselect All
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={selectAll}
+                                disabled={logs.length === 0}
+                                className="transition-all duration-200 hover:scale-105 active:scale-95"
+                            >
+                                <CheckSquare className="mr-2 h-4 w-4"/>
+                                Select All ({logs.length})
+                            </Button>
+                        )}
+                    </div>
+                </div>
 
                 <Card>
                     <CardHeader>
