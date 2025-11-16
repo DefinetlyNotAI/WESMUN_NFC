@@ -3,7 +3,6 @@
 import {useEffect, useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
-import {ThemeToggle} from "@/components/ui/theme-toggle"
 import Link from "next/link"
 import LogoutButton from "@/components/auth/sign-out-handler"
 import {DebugMode} from "@/components/debug/debug-mode"
@@ -38,10 +37,6 @@ export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
     return (
         <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black p-4">
             <DebugMode currentRole={user.role} isEmergencyAdmin={isEmergencyAdmin}/>
-
-            <div className="absolute top-4 right-4">
-                <ThemeToggle/>
-            </div>
 
             <Card className="w-full max-w-2xl">
                 <CardHeader className="text-center">

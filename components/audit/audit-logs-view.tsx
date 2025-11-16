@@ -228,8 +228,8 @@ export function AuditLogsView() {
                                 disabled={loading}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"
                             >
-                                <Square className="mr-2 h-4 w-4"/>
-                                Deselect All
+                                <CheckSquare className="mr-2 h-4 w-4"/>
+                                Selected all {logs.length} logs
                             </Button>
                         ) : (
                             <Button
@@ -239,8 +239,8 @@ export function AuditLogsView() {
                                 disabled={logs.length === 0 || loading}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"
                             >
-                                <CheckSquare className="mr-2 h-4 w-4"/>
-                                Select All ({logs.length})
+                                <Square className="mr-2 h-4 w-4"/>
+                                Click to Select all logs
                             </Button>
                         )}
                     </div>

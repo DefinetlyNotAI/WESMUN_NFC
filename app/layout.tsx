@@ -3,6 +3,7 @@ import type {Metadata} from "next"
 import {Analytics} from "@vercel/analytics/next"
 import {SessionProvider} from "@/components/auth/session-provider"
 import {ThemeProvider} from "@/components/theme-provider"
+import {ThemeToggle} from "@/components/ui/theme-toggle"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -22,7 +23,13 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
         <body className={`font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SessionProvider>{children}</SessionProvider>
+            <SessionProvider>
+                {/* Global theme toggle on all pages */}
+                <div className="fixed right-4 top-4 z-50">
+                    <ThemeToggle/>
+                </div>
+                {children}
+            </SessionProvider>
         </ThemeProvider>
         <Analytics/>
         </body>
