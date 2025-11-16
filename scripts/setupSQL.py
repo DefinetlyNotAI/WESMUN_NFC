@@ -3,7 +3,11 @@ import asyncpg
 
 DATABASE_URL = "INSERT POSTGRESQL CONNECTION SCRIPT HERE"
 
-SQL_COMMANDS = """
+SQL_AND_MIGRATION = """
+-- ========================
+-- DB Setup
+-- ========================
+
 -- Create roles enum type
 DO $$
 BEGIN
@@ -20,7 +24,7 @@ BEGIN
     END IF;
 END$$;
 
--- Create roles table
+-- Roles table
 CREATE TABLE IF NOT EXISTS roles (
   id SERIAL PRIMARY KEY,
   name user_role UNIQUE NOT NULL,
@@ -28,7 +32,6 @@ CREATE TABLE IF NOT EXISTS roles (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert default roles
 INSERT INTO roles (name, description) VALUES
   ('user', 'Standard user with basic access'),
   ('security', 'Can update bags_checked and attendance'),
@@ -36,7 +39,7 @@ INSERT INTO roles (name, description) VALUES
   ('admin', 'Full access to all features')
 ON CONFLICT (name) DO NOTHING;
 
--- Create users table
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -47,7 +50,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create profiles table
+-- Profiles table
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
@@ -59,7 +62,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create nfc_links table
+-- NFC links table
 CREATE TABLE IF NOT EXISTS nfc_links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
@@ -69,7 +72,7 @@ CREATE TABLE IF NOT EXISTS nfc_links (
   scan_count INTEGER DEFAULT 0
 );
 
--- Create audit_logs table
+-- Audit logs table
 CREATE TABLE IF NOT EXISTS audit_logs (
   id SERIAL PRIMARY KEY,
   actor_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -91,7 +94,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_id ON audit_logs(actor_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_target_user_id ON audit_logs(target_user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
 
--- Trigger function for updated_at
+-- Trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -100,24 +103,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add triggers if they don't exist
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_trigger WHERE tgname = 'update_users_updated_at'
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_users_updated_at') THEN
         CREATE TRIGGER update_users_updated_at
         BEFORE UPDATE ON users
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column();
     END IF;
-END$$;
 
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_trigger WHERE tgname = 'update_profiles_updated_at'
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_profiles_updated_at') THEN
         CREATE TRIGGER update_profiles_updated_at
         BEFORE UPDATE ON profiles
         FOR EACH ROW
@@ -125,46 +120,20 @@ BEGIN
     END IF;
 END$$;
 
--- Add columns to users table safely
+-- Add optional columns to users table
 DO $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name='users' AND column_name='password_hash'
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='password_hash') THEN
         ALTER TABLE users ADD COLUMN password_hash TEXT;
     END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name='users' AND column_name='approval_status'
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='approval_status') THEN
         ALTER TABLE users ADD COLUMN approval_status VARCHAR(20) DEFAULT 'pending' CHECK (approval_status IN ('pending','approved','rejected'));
     END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name='users' AND column_name='approved_by'
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='approved_by') THEN
         ALTER TABLE users ADD COLUMN approved_by UUID REFERENCES users(id) ON DELETE SET NULL;
     END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name='users' AND column_name='approved_at'
-    ) THEN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='approved_at') THEN
         ALTER TABLE users ADD COLUMN approved_at TIMESTAMP WITH TIME ZONE;
-    END IF;
-END$$;
-
--- Email domain constraint
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE table_name='users' AND constraint_name='email_domain_check'
-    ) THEN
-        ALTER TABLE users DROP CONSTRAINT email_domain_check;
     END IF;
 END$$;
 
@@ -189,22 +158,58 @@ CREATE TABLE IF NOT EXISTS session_tokens (
   last_used_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Indexes
+-- Additional indexes
 CREATE INDEX IF NOT EXISTS idx_users_approval_status ON users(approval_status);
 CREATE INDEX IF NOT EXISTS idx_rate_limits_identifier ON rate_limits(identifier, action, window_start);
 CREATE INDEX IF NOT EXISTS idx_session_tokens_user_id ON session_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_session_tokens_expires_at ON session_tokens(expires_at);
+
+-- Add static user info to audit_logs
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='audit_logs' AND column_name='actor_name') THEN
+        ALTER TABLE audit_logs ADD COLUMN actor_name VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='audit_logs' AND column_name='actor_email') THEN
+        ALTER TABLE audit_logs ADD COLUMN actor_email VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='audit_logs' AND column_name='target_user_name') THEN
+        ALTER TABLE audit_logs ADD COLUMN target_user_name VARCHAR(255);
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='audit_logs' AND column_name='target_user_email') THEN
+        ALTER TABLE audit_logs ADD COLUMN target_user_email VARCHAR(255);
+    END IF;
+END$$;
+
+-- Migrate existing data
+UPDATE audit_logs al
+SET
+    actor_name = u.name,
+    actor_email = u.email
+FROM users u
+WHERE al.actor_id = u.id AND al.actor_name IS NULL;
+
+UPDATE audit_logs al
+SET
+    target_user_name = u.name,
+    target_user_email = u.email
+FROM users u
+WHERE al.target_user_id = u.id AND al.target_user_name IS NULL;
 """
 
 async def main():
     print("[WESMUN] Connecting to database...")
     conn = await asyncpg.connect(DATABASE_URL)
     try:
-        print("[WESMUN] Running SQL commands...")
-        await conn.execute(SQL_COMMANDS)
-        print("[WESMUN] Database initialized successfully!")
+        print("[WESMUN] Running SQL setup and migration...")
+        await conn.execute(SQL_AND_MIGRATION)
+        print("[WESMUN] ✓ Database initialized and audit logs migrated successfully!")
     except Exception as e:
-        print("[WESMUN] Error running SQL:", e)
+        print("[WESMUN] ✗ Error:", e)
+        raise
     finally:
         await conn.close()
         print("[WESMUN] Connection closed.")
