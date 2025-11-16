@@ -8,6 +8,7 @@ import {Badge} from "@/components/ui/badge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Loader2} from 'lucide-react'
 import type {DietType, UserRole} from "@/lib/types/database"
+import {Textarea} from "@/components/ui/textarea"
 
 interface User {
     id: string
@@ -37,6 +38,8 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
     const [attendance, setAttendance] = useState(false)
     const [role, setRole] = useState<UserRole>("user")
     const [loading, setLoading] = useState(false)
+    const [allergens, setAllergens] = useState<string>("")
+    const [error, setError] = useState<string | null>(null)
 
     // Check if user has wesmun.com email
     const canChangeRole = user?.email.toLowerCase().endsWith("@wesmun.com") ?? false
@@ -48,18 +51,27 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
             setBagsChecked(user.profile.bags_checked ?? false)
             setAttendance(user.profile.attendance ?? false)
             setRole(user.role.name)
+            setAllergens(user.profile.allergens ?? "")
+            setError(null)
         }
     }, [user])
 
     const handleSave = async () => {
         if (!user) return
 
+        // simple validation
+        if (allergens.length > 500) {
+            setError("Allergens text is too long (max 500 characters)")
+            return
+        }
+
         setLoading(true)
         try {
             const updateData: any = {
                 diet,
                 bags_checked: bagsChecked,
-                attendance
+                attendance,
+                allergens // allow empty string to clear
             }
 
             // Only include role if user has wesmun.com email
@@ -156,6 +168,21 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                                 <SelectItem value="nonveg">Non-Vegetarian</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="allergens">Allergens {allergens.length > 0 && <span className="text-muted-foreground">({allergens.length}/500)</span>}</Label>
+                        <Textarea
+                            id="allergens"
+                            value={allergens}
+                            onChange={(e) => setAllergens(e.target.value)}
+                            placeholder="List any allergies (e.g., peanuts, gluten). Leave blank if none."
+                            className={error ? "border-red-500" : ""}
+                            rows={3}
+                        />
+                        {error && (
+                            <p className="text-xs text-red-600">{error}</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">

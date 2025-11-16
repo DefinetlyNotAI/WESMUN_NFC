@@ -6,11 +6,13 @@ import {Input} from "@/components/ui/input"
 import {Badge} from "@/components/ui/badge"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {CheckCircle2, Copy, Edit2, Search, Trash2, UserPlus, Utensils, XCircle} from "lucide-react"
+import {AlertTriangle, CheckCircle2, Copy, Search, UserPlus, Utensils, XCircle} from "lucide-react"
 import React, {useState} from "react"
 import {UserEditDialog} from "../users/user-edit-dialog"
 import {copyUuid} from "@/lib/copyUUID"
 import type {DietType, UserRole} from "@/lib/types/database"
+import {UserActions} from "@/components/admin/user-action";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 
 interface User {
     id: string
@@ -77,10 +79,117 @@ export function UserManagementSection(props: Props) {
     } = props
 
     const [editingUser, setEditingUser] = useState<User | null>(null)
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+    const [bulkEditing, setBulkEditing] = useState(false)
+    const [bulkLoading, setBulkLoading] = useState(false)
+    const [bulkDiet, setBulkDiet] = useState<DietType | "unchanged">("unchanged")
+    const [bulkBags, setBulkBags] = useState<boolean | "mixed">("mixed")
+    const [bulkAttendance, setBulkAttendance] = useState<boolean | "mixed">("mixed")
+    const [bulkAllergens, setBulkAllergens] = useState<string>("")
+    const [bulkValidation, setBulkValidation] = useState<{
+        error: string | null
+        success: string | null
+        fieldErrors: Record<string, string>
+    }>({error: null, success: null, fieldErrors: {}})
 
     const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 
+    const toggleSelect = (id: string) => {
+        const next = new Set(selectedIds)
+        if (next.has(id)) {
+            next.delete(id)
+        } else {
+            next.add(id)
+        }
+        setSelectedIds(next)
+    }
+    const selectAllUsers = () => {
+        // Only select users with role 'user', not admin/security/overseer
+        const userOnlyIds = filteredUsers
+            .filter(u => u.role.name === 'user')
+            .map(u => u.id)
+        setSelectedIds(new Set(userOnlyIds))
+    }
+    const clearSelection = () => setSelectedIds(new Set())
+
+    const performBulkUpdate = async () => {
+        if (selectedIds.size === 0) return
+
+        // Reset validation
+        setBulkValidation({error: null, success: null, fieldErrors: {}})
+
+        // Validate at least one field is changed
+        const hasChanges = bulkDiet !== "unchanged" || bulkBags !== "mixed" || bulkAttendance !== "mixed" || bulkAllergens.trim() !== ""
+        if (!hasChanges) {
+            setBulkValidation({
+                error: "Please select at least one field to update",
+                success: null,
+                fieldErrors: {}
+            })
+            return
+        }
+
+        // Validate allergens length if provided
+        const fieldErrors: Record<string, string> = {}
+        if (bulkAllergens.trim().length > 500) {
+            fieldErrors.allergens = "Allergens text is too long (max 500 characters)"
+        }
+
+        if (Object.keys(fieldErrors).length > 0) {
+            setBulkValidation({error: null, success: null, fieldErrors})
+            return
+        }
+
+        setBulkLoading(true)
+        try {
+            const body: any = {userIds: Array.from(selectedIds)}
+            if (bulkDiet !== "unchanged") body.diet = bulkDiet
+            if (bulkBags !== "mixed") body.bags_checked = bulkBags
+            if (bulkAttendance !== "mixed") body.attendance = bulkAttendance
+            if (bulkAllergens.trim() !== "") body.allergens = bulkAllergens.trim()
+
+            const res = await fetch('/api/users/bulk-update', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            })
+
+            const data = await res.json().catch(() => ({}))
+
+            if (!res.ok) {
+                setBulkValidation({
+                    error: data.error || 'Bulk update failed',
+                    success: null,
+                    fieldErrors: {}
+                })
+            } else {
+                setBulkValidation({
+                    error: null,
+                    success: `Successfully updated ${data.updated} user(s)${data.missing?.length ? ` (${data.missing.length} not found)` : ''}`,
+                    fieldErrors: {}
+                })
+                // Reset form after 2 seconds
+                setTimeout(() => {
+                    setBulkEditing(false)
+                    clearSelection()
+                    setBulkValidation({error: null, success: null, fieldErrors: {}})
+                }, 2000)
+                await fetchUsers()
+            }
+        } catch (e) {
+            console.error(e)
+            setBulkValidation({
+                error: 'Network error occurred',
+                success: null,
+                fieldErrors: {}
+            })
+        } finally {
+            setBulkLoading(false)
+        }
+    }
+
     return (
+        <>
         <Card>
             <CardHeader>
                 <CardTitle>User Management</CardTitle>
@@ -95,13 +204,22 @@ export function UserManagementSection(props: Props) {
                         className="pl-9"
                     />
                 </div>
-            </CardHeader>
 
+                {selectedIds.size > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setBulkEditing(true)}>Bulk Edit
+                            ({selectedIds.size})</Button>
+                        <Button variant="outline" size="sm" onClick={selectAllUsers}>Select All</Button>
+                        <Button variant="ghost" size="sm" onClick={clearSelection}>Clear</Button>
+                    </div>
+                )}
+            </CardHeader>
             <CardContent>
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[36px]">{/* Select */}</TableHead>
                                 <TableHead>User</TableHead>
                                 <TableHead>Role</TableHead>
                                 <TableHead>Status</TableHead>
@@ -109,7 +227,6 @@ export function UserManagementSection(props: Props) {
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
-
                         <TableBody>
                             {filteredUsers.map(user => {
                                 const isEmergencyAdmin =
@@ -122,16 +239,24 @@ export function UserManagementSection(props: Props) {
                                 return (
                                     <TableRow key={user.id}>
                                         <TableCell>
+                                            {user.role.name === 'user' ? (
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIds.has(user.id)}
+                                                    onChange={() => toggleSelect(user.id)}
+                                                    className="h-4 w-4 cursor-pointer"
+                                                    title="Select for bulk edit"
+                                                />
+                                            ) : (
+                                                <span className="inline-block w-4" />
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
                                             <div className="flex items-center gap-2">
                                                 {user.image ? (
-                                                    <img
-                                                        src={user.image || "/wesmun.svg"}
-                                                        alt={user.name}
-                                                        className="h-8 w-8 rounded-full"
-                                                    />
+                                                    <img src={user.image || "/wesmun.svg"} alt={user.name} className="h-8 w-8 rounded-full"/>
                                                 ) : (
-                                                    <div
-                                                        className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs">
                                                         {user.name.charAt(0)}
                                                     </div>
                                                 )}
@@ -169,7 +294,8 @@ export function UserManagementSection(props: Props) {
                                             )}
 
                                             {isEmergencyAdmin && (
-                                                <p className="text-xs text-orange-600 mt-1">Emergency Admin Status cannot be revoked</p>
+                                                <p className="text-xs text-orange-600 mt-1">Emergency Admin Status
+                                                    cannot be revoked</p>
                                             )}
                                         </TableCell>
 
@@ -205,6 +331,15 @@ export function UserManagementSection(props: Props) {
                                                                 ? "Veg"
                                                                 : "Non-Veg"}
                                                         </Badge>
+
+                                                        {user.profile.allergens && (
+                                                            <><
+                                                                AlertTriangle className="h-4 w-4 text-orange-600"/>
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    Delegate has allergens
+                                                                </Badge>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ) : (
@@ -261,27 +396,15 @@ export function UserManagementSection(props: Props) {
                                                 </Button>
                                             )}
                                         </TableCell>
-
                                         <TableCell className="text-right">
-                                            <div className="flex gap-2 justify-end">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => setEditingUser(user)}
-                                                    disabled={updating === user.id || isEmergencyAdmin}
-                                                >
-                                                    <Edit2 className="h-4 w-4"/>
-                                                </Button>
-
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => deleteUser(user.id, user.role.name)}
-                                                    disabled={updating === user.id || isAdmin || isEmergencyAdmin || user.role.name === "security" || user.role.name === "overseer"}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive"/>
-                                                </Button>
-                                            </div>
+                                            <UserActions
+                                                user={user}
+                                                updating={updating}
+                                                isAdmin={isAdmin}
+                                                isEmergencyAdmin={isEmergencyAdmin}
+                                                setEditingUser={setEditingUser}
+                                                deleteUser={deleteUser}
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 )
@@ -298,5 +421,104 @@ export function UserManagementSection(props: Props) {
                 />
             </CardContent>
         </Card>
+
+        {/* Bulk Edit Dialog */}
+        <Dialog open={bulkEditing} onOpenChange={(open)=>{
+            setBulkEditing(open);
+            if (!open) setBulkValidation({error: null, success: null, fieldErrors: {}})
+        }}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Bulk Edit ({selectedIds.size})</DialogTitle>
+                    <DialogDescription>
+                        Apply the following changes to {selectedIds.size} selected user{selectedIds.size === 1 ? '' : 's'}.
+                    </DialogDescription>
+                </DialogHeader>
+
+                {bulkValidation.error && (
+                    <div className="rounded-lg border border-red-500 bg-red-50 dark:bg-red-950/20 p-3">
+                        <p className="text-sm text-red-600 dark:text-red-400">{bulkValidation.error}</p>
+                    </div>
+                )}
+
+                {bulkValidation.success && (
+                    <div className="rounded-lg border border-green-500 bg-green-50 dark:bg-green-950/20 p-3">
+                        <p className="text-sm text-green-600 dark:text-green-400">✓ {bulkValidation.success}</p>
+                    </div>
+                )}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <label className="text-xs font-medium">Diet</label>
+                        <Select value={bulkDiet} onValueChange={(v) => setBulkDiet(v as DietType | "unchanged")}>
+                            <SelectTrigger><SelectValue placeholder="Leave unchanged"/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="unchanged">(Unchanged)</SelectItem>
+                                <SelectItem value="veg">Vegetarian</SelectItem>
+                                <SelectItem value="nonveg">Non-Vegetarian</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {bulkValidation.fieldErrors.diet && (
+                            <p className="text-xs text-red-600 mt-1">{bulkValidation.fieldErrors.diet}</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium">Bags Checked</label>
+                        <Select value={bulkBags === 'mixed' ? 'mixed' : (bulkBags ? 'true' : 'false')}
+                                onValueChange={(v) => setBulkBags(v === 'mixed' ? 'mixed' : v === 'true')}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="mixed">(Unchanged)</SelectItem>
+                                <SelectItem value="true">Yes</SelectItem>
+                                <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {bulkValidation.fieldErrors.bags_checked && (
+                            <p className="text-xs text-red-600 mt-1">{bulkValidation.fieldErrors.bags_checked}</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium">Attendance</label>
+                        <Select
+                            value={bulkAttendance === 'mixed' ? 'mixed' : (bulkAttendance ? 'true' : 'false')}
+                            onValueChange={(v) => setBulkAttendance(v === 'mixed' ? 'mixed' : v === 'true')}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="mixed">(Unchanged)</SelectItem>
+                                <SelectItem value="true">Yes</SelectItem>
+                                <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {bulkValidation.fieldErrors.attendance && (
+                            <p className="text-xs text-red-600 mt-1">{bulkValidation.fieldErrors.attendance}</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium">Allergens {bulkAllergens.length > 0 &&
+                            <span className="text-muted-foreground">({bulkAllergens.length}/500)</span>}</label>
+                        <Input
+                            value={bulkAllergens}
+                            onChange={e => setBulkAllergens(e.target.value)}
+                            placeholder="Leave blank to keep"
+                            className={bulkValidation.fieldErrors.allergens ? "border-red-500" : ""}
+                        />
+                        {bulkValidation.fieldErrors.allergens && (
+                            <p className="text-xs text-red-600 mt-1">{bulkValidation.fieldErrors.allergens}</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                    <Button variant="outline" size="sm" onClick={() => {
+                        setBulkEditing(false);
+                        setBulkValidation({error: null, success: null, fieldErrors: {}})
+                    }} disabled={bulkLoading}>Cancel</Button>
+                    <Button size="sm" onClick={performBulkUpdate} disabled={bulkLoading || selectedIds.size === 0}>
+                        {bulkLoading ? 'Updating...' : `Apply Changes to ${selectedIds.size}`}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+        </>
     )
 }

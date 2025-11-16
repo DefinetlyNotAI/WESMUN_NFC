@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
@@ -16,12 +16,16 @@ import {
     RefreshCw,
     Search,
     Utensils,
-    XCircle
+    XCircle,
+    Download
 } from 'lucide-react'
 import Link from "next/link"
 import type {DietType, UserRole} from "@/lib/types/database"
 import {UserEditDialog} from "./user-edit-dialog"
-import {copyUuid} from "@/lib/copyUUID";
+import {copyUuid} from "@/lib/copyUUID"
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
+import {Label} from "@/components/ui/label"
 
 interface User {
     id: string
@@ -51,6 +55,12 @@ export function UsersView() {
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null)
     const [copiedUuid, setCopiedUuid] = useState<string | null>(null)
+    const [showExportDialog, setShowExportDialog] = useState(false)
+    const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv')
+    const [filterBags, setFilterBags] = useState<string>("all")
+    const [filterAttendance, setFilterAttendance] = useState<string>("all")
+    const [filterDiet, setFilterDiet] = useState<string>("all")
+    const [exportCount, setExportCount] = useState<{filtered:number,total:number} | null>(null)
 
     useEffect(() => {
         getCurrentUserRole().catch(console.error)
@@ -67,6 +77,25 @@ export function UsersView() {
             )
         }
     }, [searchQuery, users])
+
+    // fetch counts when export dialog opens or filters change
+    useEffect(()=>{
+        if (!showExportDialog) return
+        const run = async () => {
+            const params = new URLSearchParams({format: 'csv', mode: 'count'})
+            if (filterBags !== 'all') params.append('bags', filterBags)
+            if (filterAttendance !== 'all') params.append('attendance', filterAttendance)
+            if (filterDiet !== 'all') params.append('diet', filterDiet)
+            const res = await fetch(`/api/users/export?${params.toString()}`)
+            if (res.ok) {
+                const data = await res.json()
+                setExportCount({filtered: data.filtered ?? 0, total: data.total ?? 0})
+            } else {
+                setExportCount(null)
+            }
+        }
+        run().catch(()=>setExportCount(null))
+    }, [showExportDialog, filterBags, filterAttendance, filterDiet])
 
     const getCurrentUserRole = async () => {
         try {
@@ -98,6 +127,34 @@ export function UsersView() {
         }
     }
 
+    const downloadExport = async (format: 'csv' | 'pdf') => {
+        try {
+            const params = new URLSearchParams({format})
+            if (filterBags !== "all") params.append("bags", filterBags)
+            if (filterAttendance !== "all") params.append("attendance", filterAttendance)
+            if (filterDiet !== "all") params.append("diet", filterDiet)
+
+            const res = await fetch(`/api/users/export?${params.toString()}`)
+            if (!res.ok) {alert('Export failed'); return}
+            const blob = await res.blob()
+            const dateStr = new Date().toISOString().split('T')[0]
+            const ext = format === 'csv' ? 'csv' : 'pdf'
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `WESMUN_DELEGATE_DATA_${dateStr}.${ext}`
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            URL.revokeObjectURL(url)
+            setShowExportDialog(false)
+        } catch (e) {console.error(e); alert('Export error')}
+    }
+
+    const openExportDialog = (format: 'csv' | 'pdf') => {
+        setExportFormat(format)
+        setShowExportDialog(true)
+    }
 
     if (loading) {
         return (
@@ -120,16 +177,24 @@ export function UsersView() {
                             Back to Dashboard
                         </Button>
                     </Link>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={fetchUsers}
-                        disabled={loading}
-                        className="transition-all duration-200 hover:scale-105 active:scale-95"
-                    >
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
-                        Refresh
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={fetchUsers}
+                            disabled={loading}
+                            className="transition-all duration-200 hover:scale-105 active:scale-95"
+                        >
+                            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
+                            Refresh
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={()=>openExportDialog('csv')} title="Download CSV">
+                            <Download className="mr-2 h-4 w-4" /> CSV
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={()=>openExportDialog('pdf')} title="Download PDF">
+                            <Download className="mr-2 h-4 w-4" /> PDF
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
@@ -210,17 +275,14 @@ export function UsersView() {
 
                                                         <div className="flex items-center gap-1.5 text-sm">
                                                             <Utensils className="h-4 w-4 text-muted-foreground"/>
-                                                            <span
-                                                                className="text-muted-foreground capitalize">{user.profile.diet}</span>
-                                                        </div>
-
-                                                        {user.profile.allergens && (
-                                                            <div className="flex items-center gap-1.5 text-sm">
+                                                            <span className="text-muted-foreground capitalize">{user.profile.diet}</span>
+                                                            <>
                                                                 <AlertTriangle className="h-4 w-4 text-orange-600"/>
-                                                                <span
-                                                                    className="text-muted-foreground">{user.profile.allergens}</span>
-                                                            </div>
-                                                        )}
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    Delegate has allergens
+                                                                </Badge>
+                                                            </>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -286,6 +348,89 @@ export function UsersView() {
                 onOpenChange={(open) => !open && setEditingUser(null)}
                 onSave={fetchUsers}
             />
+
+            <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Export Delegate Data ({exportFormat.toUpperCase()})</DialogTitle>
+                        <DialogDescription>
+                            Filter the export by user attributes (optional)
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Bags Checked</Label>
+                            <Select value={filterBags} onValueChange={setFilterBags}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All (No Filter)</SelectItem>
+                                    <SelectItem value="true">Yes - Bags Checked</SelectItem>
+                                    <SelectItem value="false">No - Bags Not Checked</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Attendance</Label>
+                            <Select value={filterAttendance} onValueChange={setFilterAttendance}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All (No Filter)</SelectItem>
+                                    <SelectItem value="true">Yes - Attended</SelectItem>
+                                    <SelectItem value="false">No - Not Attended</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Diet Preference</Label>
+                            <Select value={filterDiet} onValueChange={setFilterDiet}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All (No Filter)</SelectItem>
+                                    <SelectItem value="veg">Vegetarian</SelectItem>
+                                    <SelectItem value="nonveg">Non-Vegetarian</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="rounded-lg bg-muted p-3 text-sm">
+                            <p className="font-medium mb-1">Export Summary</p>
+                            <p className="text-muted-foreground">
+                                Format: <span className="font-mono text-xs bg-background px-1 rounded">{exportFormat.toUpperCase()}</span>
+                                {filterBags !== "all" && <> • Bags: {filterBags === "true" ? "Checked" : "Not Checked"}</>}
+                                {filterAttendance !== "all" && <> • Attendance: {filterAttendance === "true" ? "Yes" : "No"}</>}
+                                {filterDiet !== "all" && <> • Diet: {filterDiet === "veg" ? "Vegetarian" : "Non-Vegetarian"}</>}
+                                {filterBags === "all" && filterAttendance === "all" && filterDiet === "all" && <> • No filters applied</>}
+                            </p>
+                            <p className="text-xs mt-1">
+                                {exportCount ? (
+                                    <>This export will include <span className="font-medium">{exportCount.filtered}</span> of <span className="font-medium">{exportCount.total}</span> approved users.</>
+                                ) : (
+                                    <>Calculating included users…</>
+                                )}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                            <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={() => downloadExport(exportFormat)} className="flex-1">
+                                <Download className="mr-2 h-4 w-4" />
+                                Download {exportFormat.toUpperCase()}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

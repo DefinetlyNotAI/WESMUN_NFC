@@ -31,6 +31,7 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
     nfc_scan: {label: "NFC Scan", color: "bg-blue-500"},
     profile_update: {label: "Profile Update", color: "bg-green-600"},
     profile_update_admin: {label: "Admin Update", color: "bg-orange-600"},
+    profile_update_admin_bulk: {label: "Bulk Admin Update", color: "bg-orange-700"},
     role_update: {label: "Role Change", color: "bg-purple-600"},
     user_delete: {label: "User Deleted", color: "bg-red-600"},
     nfc_link_create: {label: "NFC Link Created", color: "bg-teal-600"},
@@ -46,7 +47,7 @@ export function AuditLogsView() {
     const [actionFilter, setActionFilter] = useState<string>("all")
 
     useEffect(() => {
-        fetchLogs()
+        fetchLogs().catch(console.error)
     }, [actionFilter])
 
     const fetchLogs = async () => {
