@@ -164,12 +164,12 @@ export function UserManagementSection(props: Props) {
 
                                             {!canChangeRole && !isEmergencyAdmin && (
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    @wesmun.com accounts only
+                                                    @wesmun.com accounts only are allowed positions
                                                 </p>
                                             )}
 
                                             {isEmergencyAdmin && (
-                                                <p className="text-xs text-orange-600 mt-1">Emergency Admin</p>
+                                                <p className="text-xs text-orange-600 mt-1">Emergency Admin Status cannot be revoked</p>
                                             )}
                                         </TableCell>
 
@@ -219,7 +219,7 @@ export function UserManagementSection(props: Props) {
                                             user.role.name === "security" ||
                                             user.role.name === "overseer" ? (
                                                 <span className="text-sm text-muted-foreground">
-                                                    WESMUN Staff, Unscannable
+                                                    WESMUN Staff have no NFC links
                                                 </span>
                                             ) : user.nfc_link && user.nfc_link.uuid ? (
                                                 <div className="flex items-center gap-2">
@@ -277,7 +277,7 @@ export function UserManagementSection(props: Props) {
                                                     size="sm"
                                                     variant="ghost"
                                                     onClick={() => deleteUser(user.id, user.role.name)}
-                                                    disabled={updating === user.id || isAdmin || isEmergencyAdmin}
+                                                    disabled={updating === user.id || isAdmin || isEmergencyAdmin || user.role.name === "security" || user.role.name === "overseer"}
                                                 >
                                                     <Trash2 className="h-4 w-4 text-destructive"/>
                                                 </Button>
