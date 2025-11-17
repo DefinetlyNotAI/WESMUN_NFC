@@ -165,17 +165,18 @@ export function AuditLogsView() {
     const isInitialLoading = loading && logs.length === 0 && !error
 
     return (
-        <div className="min-h-screen bg-muted/30 p-4">
+        <div className="min-h-screen bg-muted/30 p-2 sm:p-4">
             <div className="container mx-auto max-w-6xl space-y-4">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <Link href="/">
+                    <Link href="/" className="flex-shrink-0">
                         <Button variant="ghost" size="sm"
                                 className="transition-all duration-200 hover:scale-105 active:scale-95">
-                            <ArrowLeft className="mr-2 h-4 w-4"/>
-                            Back to Dashboard
+                            <ArrowLeft className="mr-1 sm:mr-2 h-4 w-4"/>
+                            <span className="hidden xs:inline">Back to Dashboard</span>
+                            <span className="xs:hidden">Back</span>
                         </Button>
                     </Link>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         {selectedLogs.size > 0 && (
                             <Button
                                 variant="destructive"
@@ -184,8 +185,9 @@ export function AuditLogsView() {
                                 disabled={deleting || loading}
                                 className="transition-all duration-200 hover:scale-105 active:scale-95"
                             >
-                                <Trash2 className="mr-2 h-4 w-4"/>
-                                Delete {selectedLogs.size}
+                                <Trash2 className="mr-1 sm:mr-2 h-4 w-4"/>
+                                <span className="hidden sm:inline">Delete {selectedLogs.size}</span>
+                                <span className="sm:hidden">{selectedLogs.size}</span>
                             </Button>
                         )}
                         <Button
@@ -195,8 +197,8 @@ export function AuditLogsView() {
                             disabled={loading}
                             className="transition-all duration-200 hover:scale-105 active:scale-95"
                         >
-                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-2 h-4 w-4"/>}
-                            {loading ? "Refreshing" : "Refresh"}
+                            {loading ? <Loader2 className="mr-1 sm:mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-1 sm:mr-2 h-4 w-4"/>}
+                            <span className="hidden sm:inline">{loading ? "Refreshing" : "Refresh"}</span>
                         </Button>
                     </div>
                 </div>
@@ -211,8 +213,8 @@ export function AuditLogsView() {
 
                 {/* Filter and Selection Controls */}
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <div className="relative flex-1 min-w-[250px]">
+                    <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                        <div className="relative flex-1 min-w-[200px] sm:min-w-[250px]">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="text"
@@ -220,13 +222,13 @@ export function AuditLogsView() {
                                 value={searchQuery}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                                 disabled={loading}
-                                className="pl-9"
+                                className="pl-9 text-sm"
                             />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium whitespace-nowrap">Filter:</label>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <label className="text-xs sm:text-sm font-medium whitespace-nowrap">Filter:</label>
                             <Select value={actionFilter} onValueChange={setActionFilter} disabled={loading}>
-                                <SelectTrigger className="w-[200px]">
+                                <SelectTrigger className="w-[150px] sm:w-[200px] text-xs sm:text-sm">
                                     <SelectValue placeholder="All Actions" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -245,17 +247,17 @@ export function AuditLogsView() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {selectedLogs.size === logs.length && logs.length > 0 ? (
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">{selectedLogs.size === logs.length && logs.length > 0 ? (
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={deselectAll}
                                 disabled={loading}
-                                className="transition-all duration-200 hover:scale-105 active:scale-95"
+                                className="transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm"
                             >
-                                <CheckSquare className="mr-2 h-4 w-4"/>
-                                Selected all {logs.length} logs
+                                <CheckSquare className="mr-1 sm:mr-2 h-4 w-4"/>
+                                <span className="hidden sm:inline">Selected all {logs.length} logs</span>
+                                <span className="sm:hidden">All ({logs.length})</span>
                             </Button>
                         ) : (
                             <Button
@@ -263,10 +265,11 @@ export function AuditLogsView() {
                                 size="sm"
                                 onClick={selectAll}
                                 disabled={logs.length === 0 || loading}
-                                className="transition-all duration-200 hover:scale-105 active:scale-95"
+                                className="transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm"
                             >
-                                <Square className="mr-2 h-4 w-4"/>
-                                Click to Select all logs
+                                <Square className="mr-1 sm:mr-2 h-4 w-4"/>
+                                <span className="hidden sm:inline">Click to Select all logs</span>
+                                <span className="sm:hidden">Select All</span>
                             </Button>
                         )}
                     </div>

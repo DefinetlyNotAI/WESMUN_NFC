@@ -172,31 +172,42 @@ export function UserManagementSection(props: UserManagementProps) {
 
                 {selectedIds.size > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setBulkEditing(true)}>Bulk Edit ({selectedIds.size})</Button>
+                        <Button variant="outline" size="sm" onClick={() => setBulkEditing(true)} className="text-xs sm:text-sm">
+                            <span className="hidden sm:inline">Bulk Edit ({selectedIds.size})</span>
+                            <span className="sm:hidden">Edit ({selectedIds.size})</span>
+                        </Button>
                         <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => { if (!bulkDeleteLoading) { setBulkDeleteResult(null); setBulkDeleteOpen(true) } }}
                             disabled={bulkDeleteLoading}
-                        >{bulkDeleteLoading ? 'Deleting...' : 'Bulk Delete'}</Button>
-                        <Button variant="outline" size="sm" onClick={selectAllUsers}>Select All</Button>
-                        <Button variant="ghost" size="sm" onClick={clearSelection}>Clear</Button>
+                            className="text-xs sm:text-sm"
+                        >
+                            <span className="hidden sm:inline">{bulkDeleteLoading ? 'Deleting...' : 'Bulk Delete'}</span>
+                            <span className="sm:hidden">{bulkDeleteLoading ? 'Del...' : 'Delete'}</span>
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={selectAllUsers} className="text-xs sm:text-sm">
+                            <span className="hidden sm:inline">Select All</span>
+                            <span className="sm:hidden">All</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={clearSelection} className="text-xs sm:text-sm">Clear</Button>
                     </div>
                 )}
             </CardHeader>
             <CardContent>
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[36px]">{/* Select */}</TableHead>
-                                <TableHead>User</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>NFC Link</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="inline-block min-w-full align-middle">
+                        <Table className="min-w-[800px]">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[36px]">{/* Select */}</TableHead>
+                                    <TableHead className="min-w-[200px]">User</TableHead>
+                                    <TableHead className="min-w-[150px]">Role</TableHead>
+                                    <TableHead className="min-w-[150px]">Status</TableHead>
+                                    <TableHead className="min-w-[120px]">NFC Link</TableHead>
+                                    <TableHead className="text-right min-w-[100px]">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
                         <TableBody>
                             {filteredUsers.map(user => {
                                 const isEmergencyAdmin =
@@ -381,6 +392,7 @@ export function UserManagementSection(props: UserManagementProps) {
                             })}
                         </TableBody>
                     </Table>
+                    </div>
                 </div>
 
                 <UserEditDialog

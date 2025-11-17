@@ -93,10 +93,10 @@ export function SignInForm() {
     }
 
     return (
-        <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-                <CardTitle className="text-2xl">MUN NFC System</CardTitle>
-                <CardDescription>{isLogin ? "Sign in to your account" : "Create a new account"}</CardDescription>
+        <Card className="w-full max-w-md mx-2 sm:mx-0">
+            <CardHeader className="text-center px-4 sm:px-6">
+                <CardTitle className="text-xl sm:text-2xl">MUN NFC System</CardTitle>
+                <CardDescription className="text-sm">{isLogin ? "Sign in to your account" : "Create a new account"}</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">

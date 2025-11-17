@@ -181,10 +181,19 @@ export function AdminPanel() {
                 )}
 
                 <Tabs defaultValue="manage-users" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="manage-users">Manage Delegates</TabsTrigger>
-                        <TabsTrigger value="add-users">Add Delegates</TabsTrigger>
-                        <TabsTrigger value="pending">Check requested signups</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 h-auto">
+                        <TabsTrigger value="manage-users" className="text-xs sm:text-sm px-2 py-2">
+                            <span className="hidden sm:inline">Manage Delegates</span>
+                            <span className="sm:hidden">Manage</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="add-users" className="text-xs sm:text-sm px-2 py-2">
+                            <span className="hidden sm:inline">Add Delegates</span>
+                            <span className="sm:hidden">Add</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="pending" className="text-xs sm:text-sm px-2 py-2">
+                            <span className="hidden sm:inline">Check requested signups</span>
+                            <span className="sm:hidden">Requests</span>
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="manage-users">

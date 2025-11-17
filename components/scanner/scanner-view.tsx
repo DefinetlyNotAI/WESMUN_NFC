@@ -21,12 +21,13 @@ export function ScannerView() {
     }
 
     return (
-        <div className="min-h-screen bg-muted/30 p-4">
-            <div className="mx-auto max-w-md space-y-4">
+        <div className="min-h-screen bg-muted/30 p-2 sm:p-4">
+            <div className="mx-auto max-w-md space-y-4 px-2 sm:px-0">
                 <Link href="/">
                     <Button variant="ghost" size="sm">
-                        <ArrowLeft className="mr-2 h-4 w-4"/>
-                        Back to Dashboard
+                        <ArrowLeft className="mr-1 sm:mr-2 h-4 w-4"/>
+                        <span className="hidden xs:inline">Back to Dashboard</span>
+                        <span className="xs:hidden">Back</span>
                     </Button>
                 </Link>
 

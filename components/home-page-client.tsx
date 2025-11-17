@@ -27,13 +27,13 @@ export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
     }, [user.role])
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black p-4">
+        <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black p-2 sm:p-4">
             <DebugMode currentRole={user.role} isEmergencyAdmin={isEmergencyAdmin}/>
 
             <Card className="w-full max-w-2xl">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-bold">WESMUN NFC System</CardTitle>
-                    <CardDescription className="text-base">
+                <CardHeader className="text-center px-4 sm:px-6">
+                    <CardTitle className="text-2xl sm:text-3xl font-bold break-words">WESMUN NFC System</CardTitle>
+                    <CardDescription className="text-sm sm:text-base break-words">
                         Welcome, {user.name} ({effectiveRole})
                     </CardDescription>
                 </CardHeader>

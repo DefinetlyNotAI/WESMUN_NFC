@@ -25,7 +25,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <SessionProvider>
                 {/* Global theme toggle on all pages */}
-                <div className="fixed right-4 top-4 z-50">
+                <div className="fixed right-2 top-2 sm:right-4 sm:top-4 z-50">
                     <ThemeToggle/>
                 </div>
                 {children}

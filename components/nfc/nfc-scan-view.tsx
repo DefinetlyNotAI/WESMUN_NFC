@@ -158,30 +158,30 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     const canUpdateDiet = userRole === "admin"
 
     return (
-        <div className="min-h-screen bg-muted/30 p-4">
-            <div className="mx-auto max-w-2xl space-y-4">
+        <div className="min-h-screen bg-muted/30 p-2 sm:p-4">
+            <div className="mx-auto max-w-2xl space-y-4 px-2 sm:px-0">
                 <Card>
-                    <CardHeader>
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
+                    <CardHeader className="px-4 sm:px-6">
+                        <div className="flex items-start justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
                                 {userData.user.image ? (
                                     <img
                                         src={userData.user.image || "//wesmun.svg"}
                                         alt={userData.user.name}
-                                        className="h-12 w-12 rounded-full"
+                                        className="h-12 w-12 rounded-full flex-shrink-0"
                                     />
                                 ) : (
                                     <div
-                                        className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                                        className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
                                         <User className="h-6 w-6"/>
                                     </div>
                                 )}
-                                <div>
-                                    <CardTitle>{userData.user.name}</CardTitle>
-                                    <CardDescription>{userData.user.email}</CardDescription>
+                                <div className="min-w-0 flex-1">
+                                    <CardTitle className="break-words text-lg sm:text-xl">{userData.user.name}</CardTitle>
+                                    <CardDescription className="break-all text-sm">{userData.user.email}</CardDescription>
                                 </div>
                             </div>
-                            <Badge variant="outline">{userData.user.role.name}</Badge>
+                            <Badge variant="outline" className="flex-shrink-0">{userData.user.role.name}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">

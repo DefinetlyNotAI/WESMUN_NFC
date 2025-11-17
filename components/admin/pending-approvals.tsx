@@ -93,59 +93,65 @@ export function PendingApprovals() {
                 <CardDescription>Review and approve new user registrations</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>User</TableHead>
-                                <TableHead>Registered</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>
-                                        <div>
-                                            <p className="font-medium">{user.name}</p>
-                                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <p className="text-sm text-muted-foreground">{new Date(user.created_at).toLocaleDateString()}</p>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="default"
-                                                onClick={() => handleApproval(user.id, true)}
-                                                disabled={processing === user.id}
-                                            >
-                                                {processing === user.id ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin"/>
-                                                ) : (
-                                                    <>
-                                                        <CheckCircle2 className="mr-1 h-4 w-4"/>
-                                                        Approve
-                                                    </>
-                                                )}
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                onClick={() => handleApproval(user.id, false)}
-                                                disabled={processing === user.id}
-                                            >
-                                                <XCircle className="mr-1 h-4 w-4"/>
-                                                Reject
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="inline-block min-w-full align-middle">
+                        <Table className="min-w-[600px]">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[200px]">User</TableHead>
+                                    <TableHead className="min-w-[120px]">Registered</TableHead>
+                                    <TableHead className="text-right min-w-[180px]">Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((user) => (
+                                    <TableRow key={user.id}>
+                                        <TableCell>
+                                            <div>
+                                                <p className="font-medium break-words">{user.name}</p>
+                                                <p className="text-sm text-muted-foreground break-all">{user.email}</p>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <p className="text-sm text-muted-foreground">{new Date(user.created_at).toLocaleDateString()}</p>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2 flex-wrap">
+                                                <Button
+                                                    size="sm"
+                                                    variant="default"
+                                                    onClick={() => handleApproval(user.id, true)}
+                                                    disabled={processing === user.id}
+                                                    className="text-xs sm:text-sm"
+                                                >
+                                                    {processing === user.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin"/>
+                                                    ) : (
+                                                        <>
+                                                            <CheckCircle2 className="mr-1 h-4 w-4"/>
+                                                            <span className="hidden sm:inline">Approve</span>
+                                                            <span className="sm:hidden">✓</span>
+                                                        </>
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    onClick={() => handleApproval(user.id, false)}
+                                                    disabled={processing === user.id}
+                                                    className="text-xs sm:text-sm"
+                                                >
+                                                    <XCircle className="mr-1 h-4 w-4"/>
+                                                    <span className="hidden sm:inline">Reject</span>
+                                                    <span className="sm:hidden">✗</span>
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
             </CardContent>
         </Card>

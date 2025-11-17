@@ -124,3 +124,38 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Mobile-friendly responsive utilities */
+@layer utilities {
+    /* Custom breakpoint for extra small screens */
+    @media (min-width: 475px) {
+        .xs\:inline {
+            display: inline;
+        }
+        .xs\:hidden {
+            display: none;
+        }
+    }
+
+    /* Ensure text breaks properly on mobile */
+    .break-words {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Mobile-friendly scrollable containers */
+    .mobile-scroll {
+        @apply overflow-x-auto -mx-2 sm:mx-0;
+    }
+
+    /* Prevent horizontal scroll on mobile */
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
