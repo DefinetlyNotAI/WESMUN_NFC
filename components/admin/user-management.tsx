@@ -9,62 +9,24 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {AlertTriangle, CheckCircle2, Copy, Search, UserPlus, Utensils, XCircle} from "lucide-react"
 import React, {useState} from "react"
 import {UserEditDialog} from "../users/user-edit-dialog"
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import {copyUuid} from "@/lib/copyUUID"
 import type {DietType, UserRole} from "@/lib/types/database"
 import {UserActions} from "@/components/admin/user-action";
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
-
-interface User {
-    id: string
-    name: string
-    email: string
-    image: string | null
-    profile: {
-        bags_checked: boolean
-        attendance: boolean
-        diet: DietType
-        allergens: string | null
-    }
-    nfc_link: {
-        uuid: string
-        scan_count: number
-    } | null
-    role: {
-        name: UserRole
-    }
-}
-
-interface Props {
-    filteredUsers: User[]
-    searchQuery: string
-    setSearchQuery: (s: string) => void
-    updating: string | null
-    copiedUuid: string | null
-    setCopiedUuid: React.Dispatch<React.SetStateAction<string | null>>
-    fetchUsers: () => Promise<void>
-    updateUserRole: (id: string, role: UserRole, username?: string) => Promise<void>
-    createNfcLink: (id: string) => Promise<void>
-    deleteUser: (id: string, role?: UserRole) => Promise<void>
-}
-
-interface StatusIconProps {
-    active: boolean
-    activeLabel: string
-    inactiveLabel: string
-}
+import type { User, UserManagementProps, StatusIconProps } from "@/lib/types/ui"
 
 const StatusIcon: React.FC<StatusIconProps> = ({active, activeLabel, inactiveLabel}) => (
-    <div className="flex items-center gap-2">
-        {active ? (
-            <CheckCircle2 className="h-4 w-4 text-green-600"/>
-        ) : (
-            <XCircle className="h-4 w-4 text-muted-foreground"/>
-        )}
-        <span className="text-xs text-muted-foreground">{active ? activeLabel : inactiveLabel}</span>
-    </div>
-)
+     <div className="flex items-center gap-2">
+         {active ? (
+             <CheckCircle2 className="h-4 w-4 text-green-600"/>
+         ) : (
+             <XCircle className="h-4 w-4 text-muted-foreground"/>
+         )}
+         <span className="text-xs text-muted-foreground">{active ? activeLabel : inactiveLabel}</span>
+     </div>
+ )
 
-export function UserManagementSection(props: Props) {
+export function UserManagementSection(props: UserManagementProps) {
     const {
         filteredUsers,
         searchQuery,
@@ -341,8 +303,8 @@ export function UserManagementSection(props: Props) {
                                                         </Badge>
 
                                                         {user.profile.allergens && (
-                                                            <><
-                                                                AlertTriangle className="h-4 w-4 text-orange-600"/>
+                                                            <>
+                                                                <AlertTriangle className="h-4 w-4 text-orange-600"/>
                                                                 <Badge variant="outline" className="text-xs">
                                                                     Delegate has allergens
                                                                 </Badge>
@@ -431,7 +393,7 @@ export function UserManagementSection(props: Props) {
         </Card>
 
         {/* Bulk Edit Dialog */}
-        <Dialog open={bulkEditing} onOpenChange={(open)=>{
+        <Dialog open={bulkEditing} onOpenChange={(open: boolean)=>{
             setBulkEditing(open);
             if (!open) setBulkValidation({error: null, success: null, fieldErrors: {}})
         }}>
@@ -529,7 +491,7 @@ export function UserManagementSection(props: Props) {
         </Dialog>
 
         {/* Bulk Delete Dialog */}
-        <Dialog open={bulkDeleteOpen} onOpenChange={(open) => { if (!bulkDeleteLoading) setBulkDeleteOpen(open) }}>
+        <Dialog open={bulkDeleteOpen} onOpenChange={(open: boolean) => { if (!bulkDeleteLoading) setBulkDeleteOpen(open) }}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{bulkDeleteResult ? 'Bulk Delete Result' : `Confirm Bulk Delete (${selectedIds.size})`}</DialogTitle>

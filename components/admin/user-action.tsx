@@ -1,24 +1,6 @@
 import {Button} from "@/components/ui/button"
 import {Edit2, Trash2} from "lucide-react"
-import type {UserRole} from "@/lib/types/database"
-
-interface User {
-    id: string
-    name: string
-    email: string
-    role: {
-        name: UserRole
-    }
-}
-
-interface UserActionsProps {
-    user: User
-    updating: string | null
-    isAdmin: boolean
-    isEmergencyAdmin: boolean
-    setEditingUser: (user: any) => void
-    deleteUser: (id: string, role?: UserRole) => Promise<void>
-}
+import type {UserActionsProps} from "@/lib/types/ui"
 
 export function UserActions({
                                 user,

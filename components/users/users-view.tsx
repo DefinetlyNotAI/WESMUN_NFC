@@ -20,33 +20,14 @@ import {
     Download
 } from 'lucide-react'
 import Link from "next/link"
-import type {DietType, UserRole} from "@/lib/types/database"
+import type {UserRole} from "@/lib/types/database"
 import {UserEditDialog} from "./user-edit-dialog"
+import type { User } from "@/lib/types/ui"
 import {copyUuid} from "@/lib/copyUUID"
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-
-interface User {
-    id: string
-    name: string
-    email: string
-    image: string | null
-    profile: {
-        bags_checked: boolean
-        attendance: boolean
-        diet: DietType
-        allergens: string | null
-    }
-    nfc_link: {
-        uuid: string
-        scan_count: number
-    } | null
-    role: {
-        name: UserRole
-    }
-}
 
 export function UsersView() {
     const [users, setUsers] = useState<User[]>([])

@@ -8,15 +8,7 @@ import LogoutButton from "@/components/auth/sign-out-handler"
 import {DebugMode} from "@/components/debug/debug-mode"
 import {getEffectiveRole} from "@/lib/debug"
 import type {UserRole} from "@/lib/types/database"
-
-interface HomePageClientProps {
-    user: {
-        name: string
-        email: string
-        role: UserRole
-    }
-    isEmergencyAdmin: boolean
-}
+import type { HomePageClientProps } from "@/lib/types/ui"
 
 export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
     const [effectiveRole, setEffectiveRole] = useState<UserRole>(user.role)
