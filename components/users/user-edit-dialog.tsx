@@ -10,28 +10,7 @@ import {Loader2} from 'lucide-react'
 import type {DietType, UserRole} from "@/lib/types/database"
 import {Textarea} from "@/components/ui/textarea"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-
-interface User {
-    id: string
-    name: string
-    email: string
-    profile: {
-        bags_checked: boolean
-        attendance: boolean
-        diet: DietType
-        allergens: string | null
-    }
-    role: {
-        name: UserRole
-    }
-}
-
-interface UserEditDialogProps {
-    open: boolean
-    user: User | null
-    onOpenChange: (open: boolean) => void
-    onSave?: () => Promise<void>
-}
+import type { UserEditDialogProps } from "@/lib/types/ui"
 
 export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialogProps) {
     const [diet, setDiet] = useState<DietType>("veg")

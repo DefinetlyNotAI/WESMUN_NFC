@@ -8,25 +8,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Shield, Square, Trash2} from 'lucide-react'
 import Link from "next/link"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-
-interface AuditLog {
-    id: number
-    action: string
-    details: Record<string, any> | null
-    ip_address: string | null
-    user_agent: string | null
-    created_at: string
-    actor: {
-        id: string
-        name: string
-        email: string
-    } | null
-    target_user: {
-        id: string
-        name: string
-        email: string
-    } | null
-}
+import type {AuditLog} from "@/lib/types/ui"
 
 const ACTION_LABELS: Record<string, { label: string; color: string }> = {
     // NFC related

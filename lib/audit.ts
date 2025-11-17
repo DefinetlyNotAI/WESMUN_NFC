@@ -1,13 +1,5 @@
 import {query} from "./db"
-
-interface CreateAuditLogParams {
-    actorId?: string | null
-    targetUserId?: string | null
-    action: string
-    details?: Record<string, any>
-    ipAddress?: string
-    userAgent?: string
-}
+import type { CreateAuditLogParams } from "@/lib/types/ui"
 
 export async function createAuditLog({
                                          actorId,
