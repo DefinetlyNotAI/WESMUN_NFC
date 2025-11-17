@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
         const limit = Number.parseInt(searchParams.get("limit") || "100")
         const offset = Number.parseInt(searchParams.get("offset") || "0")
         const actionFilter = searchParams.get("action") || null
+        const searchQuery = searchParams.get("search") || null
 
         if (limit > 500 || limit < 1) {
             return NextResponse.json({error: "Invalid limit parameter"}, {status: 400})
@@ -54,9 +55,27 @@ export async function GET(request: NextRequest) {
                       LEFT JOIN users target ON al.target_user_id = target.id`
 
         const queryParams: any[] = []
+        const whereClauses: string[] = []
+
         if (actionFilter) {
-            queryStr += ` WHERE al.action = $${queryParams.length + 1}`
+            whereClauses.push(`al.action = $${queryParams.length + 1}`)
             queryParams.push(actionFilter)
+        }
+
+        if (searchQuery) {
+            whereClauses.push(`(
+                COALESCE(al.actor_name, actor.name) ILIKE $${queryParams.length + 1} OR
+                COALESCE(al.actor_email, actor.email) ILIKE $${queryParams.length + 1} OR
+                COALESCE(al.target_user_name, target.name) ILIKE $${queryParams.length + 1} OR
+                COALESCE(al.target_user_email, target.email) ILIKE $${queryParams.length + 1} OR
+                al.action ILIKE $${queryParams.length + 1} OR
+                al.ip_address::text ILIKE $${queryParams.length + 1}
+            )`)
+            queryParams.push(`%${searchQuery}%`)
+        }
+
+        if (whereClauses.length > 0) {
+            queryStr += ` WHERE ${whereClauses.join(' AND ')}`
         }
 
         queryStr += ` ORDER BY al.created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`
@@ -65,11 +84,31 @@ export async function GET(request: NextRequest) {
         const logs = await query<any>(queryStr, queryParams)
 
         // Count with filter
-        let countQuery = "SELECT COUNT(*) as count FROM audit_logs"
+        let countQuery = `SELECT COUNT(*) as count FROM audit_logs al
+                          LEFT JOIN users actor ON al.actor_id = actor.id
+                          LEFT JOIN users target ON al.target_user_id = target.id`
         const countParams: any[] = []
+        const countWhereClauses: string[] = []
+
         if (actionFilter) {
-            countQuery += " WHERE action = $1"
+            countWhereClauses.push(`al.action = $${countParams.length + 1}`)
             countParams.push(actionFilter)
+        }
+
+        if (searchQuery) {
+            countWhereClauses.push(`(
+                COALESCE(al.actor_name, actor.name) ILIKE $${countParams.length + 1} OR
+                COALESCE(al.actor_email, actor.email) ILIKE $${countParams.length + 1} OR
+                COALESCE(al.target_user_name, target.name) ILIKE $${countParams.length + 1} OR
+                COALESCE(al.target_user_email, target.email) ILIKE $${countParams.length + 1} OR
+                al.action ILIKE $${countParams.length + 1} OR
+                al.ip_address::text ILIKE $${countParams.length + 1}
+            )`)
+            countParams.push(`%${searchQuery}%`)
+        }
+
+        if (countWhereClauses.length > 0) {
+            countQuery += ` WHERE ${countWhereClauses.join(' AND ')}`
         }
 
         const countResult = await query<{ count: number }>(countQuery, countParams)

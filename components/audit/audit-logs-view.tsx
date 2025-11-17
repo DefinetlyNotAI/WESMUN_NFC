@@ -4,8 +4,9 @@ import {useEffect, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
+import {Input} from "@/components/ui/input"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Shield, Square, Trash2} from 'lucide-react'
+import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Search, Shield, Square, Trash2} from 'lucide-react'
 import Link from "next/link"
 import {Alert, AlertDescription} from "@/components/ui/alert"
 import type {AuditLog} from "@/lib/types/ui"
@@ -42,19 +43,34 @@ export function AuditLogsView() {
     const [deleting, setDeleting] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [actionFilter, setActionFilter] = useState<string>("all")
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const [debouncedSearch, setDebouncedSearch] = useState<string>("")
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery)
+        }, 300)
+        return () => clearTimeout(timer)
+    }, [searchQuery])
 
     useEffect(() => {
         fetchLogs().catch(console.error)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [actionFilter])
+    }, [actionFilter, debouncedSearch])
 
     const fetchLogs = async () => {
         try {
             setLoading(true)
             setError(null)
-            const url = actionFilter && actionFilter !== "all"
-                ? `/api/audit?action=${actionFilter}`
-                : "/api/audit"
+            const params = new URLSearchParams()
+            if (actionFilter && actionFilter !== "all") {
+                params.append("action", actionFilter)
+            }
+            if (debouncedSearch) {
+                params.append("search", debouncedSearch)
+            }
+            const url = `/api/audit${params.toString() ? `?${params.toString()}` : ''}`
             const response = await fetch(url)
             const data = await response.json()
 
@@ -195,25 +211,38 @@ export function AuditLogsView() {
 
                 {/* Filter and Selection Controls */}
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium">Filter by Action:</label>
-                        <Select value={actionFilter} onValueChange={setActionFilter} disabled={loading}>
-                            <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder="All Actions" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Actions</SelectItem>
-                                <SelectItem value="nfc_scan">NFC Scan</SelectItem>
-                                <SelectItem value="profile_update">Profile Update</SelectItem>
-                                <SelectItem value="profile_update_admin">Admin Update</SelectItem>
-                                <SelectItem value="role_update">Role Change</SelectItem>
-                                <SelectItem value="user_delete">User Deleted</SelectItem>
-                                <SelectItem value="nfc_link_create">NFC Link Created</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {loading && (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>
-                        )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <div className="relative flex-1 min-w-[250px]">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search by name, email, action, or IP..."
+                                value={searchQuery}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                                disabled={loading}
+                                className="pl-9"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium whitespace-nowrap">Filter:</label>
+                            <Select value={actionFilter} onValueChange={setActionFilter} disabled={loading}>
+                                <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="All Actions" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Actions</SelectItem>
+                                    <SelectItem value="nfc_scan">NFC Scan</SelectItem>
+                                    <SelectItem value="profile_update">Profile Update</SelectItem>
+                                    <SelectItem value="profile_update_admin">Admin Update</SelectItem>
+                                    <SelectItem value="role_update">Role Change</SelectItem>
+                                    <SelectItem value="user_delete">User Deleted</SelectItem>
+                                    <SelectItem value="nfc_link_create">NFC Link Created</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {loading && (
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2">

@@ -1,16 +1,10 @@
 import "server-only"
 
-import type {UserRole} from "./types/database"
+import type { SessionUser } from "@/lib/types"
 import {cookies} from "next/headers"
 
-// Mock user type for development
-export type SessionUser = {
-    id: string
-    email: string
-    name: string
-    role: UserRole
-    image?: string
-}
+// Re-export for convenience
+export type { SessionUser }
 
 function getBaseUrl() {
     if (typeof window !== "undefined") return "";

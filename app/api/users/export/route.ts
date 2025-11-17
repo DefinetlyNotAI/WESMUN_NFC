@@ -40,7 +40,7 @@ export async function GET(request: Request) {
         const rows = await query<any>(
             `SELECT u.name, u.email,
                     p.bags_checked, p.attendance, p.diet, p.allergens,
-                    n.scan_count
+                    n.scan_count, n.uuid
              FROM users u
              LEFT JOIN profiles p ON u.id = p.user_id
              LEFT JOIN nfc_links n ON u.id = n.user_id
@@ -115,13 +115,14 @@ export async function GET(request: Request) {
             }
 
             const cols = [
-                {key: 'name', title: 'Name', width: 180},
-                {key: 'email', title: 'Email', width: 220},
-                {key: 'bags_checked', title: 'Bags', width: 40},
-                {key: 'attendance', title: 'Attend', width: 50},
-                {key: 'diet', title: 'Diet', width: 50},
-                {key: 'allergens', title: 'Allergens', width: 220},
-                {key: 'scan_count', title: 'Scans', width: 50}
+                {key: 'name', title: 'Name', width: 120},
+                {key: 'email', title: 'Email', width: 150},
+                {key: 'bags_checked', title: 'Bags', width: 35},
+                {key: 'attendance', title: 'Attend', width: 40},
+                {key: 'diet', title: 'Diet', width: 45},
+                {key: 'allergens', title: 'Allergens', width: 100},
+                {key: 'scan_count', title: 'Scans', width: 40},
+                {key: 'nfc_link', title: 'NFC Link', width: 232}
             ]
 
             // Draw header row
@@ -138,14 +139,17 @@ export async function GET(request: Request) {
 
             const drawRow = (r: any) => {
                 x = margin
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nfc.wesmun.org'
+                const nfcLink = r.uuid ? `${baseUrl}/nfc/${r.uuid}` : 'N/A'
                 const cells = [
                     String(r.name ?? ''),
                     String(r.email ?? ''),
-                    r.bags_checked ? 'Y' : 'N',
-                    r.attendance ? 'Y' : 'N',
+                    r.bags_checked ? '✓' : '✗',
+                    r.attendance ? '✓' : '✗',
                     String(r.diet ?? ''),
                     String(r.allergens ?? ''),
-                    String(r.scan_count ?? 0)
+                    String(r.scan_count ?? 0),
+                    nfcLink
                 ]
                 for (let i = 0; i < cols.length; i++) {
                     const c = cols[i]

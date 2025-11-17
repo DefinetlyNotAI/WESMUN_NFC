@@ -3,15 +3,7 @@ import {getCurrentUser} from "@/lib/session"
 import {query} from "@/lib/db"
 import {hasPermission} from "@/lib/permissions"
 import {createAuditLog} from "@/lib/audit"
-import type {DietType, UserRole} from "@/lib/types/database"
-
-interface UpdateUserRequest {
-    role?: UserRole
-    diet?: DietType
-    allergens?: string
-    bags_checked?: boolean
-    attendance?: boolean
-}
+import type {UpdateUserRequest} from "@/lib/types/api"
 
 export async function PATCH(request: NextRequest, {params}: { params: Promise<{ userId: string }> }) {
     try {
