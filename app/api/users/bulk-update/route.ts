@@ -21,7 +21,9 @@ export async function PATCH(request: Request) {
 
         // Fetch target users and validate
         const placeholders = userIds.map((_, i) => `$${i + 1}`).join(",")
-        const users = await query<{ id: string; email: string }>(`SELECT id, email FROM users WHERE id IN (${placeholders})`, userIds)
+        const users = await query<{ id: string; email: string }>(`SELECT id, email
+                                                                  FROM users
+                                                                  WHERE id IN (${placeholders})`, userIds)
         const existingIds = new Set(users.map(u => u.id))
         const missing = userIds.filter(id => !existingIds.has(id))
 
@@ -29,20 +31,38 @@ export async function PATCH(request: Request) {
         if (body.role) {
             const invalidRoleEmails = users.filter(u => !u.email.toLowerCase().endsWith("@wesmun.com"))
             if (invalidRoleEmails.length > 0) {
-                return NextResponse.json({error: "Role changes only allowed for @wesmun.com accounts", invalid: invalidRoleEmails.map(u => u.email)}, {status: 403})
+                return NextResponse.json({
+                    error: "Role changes only allowed for @wesmun.com accounts",
+                    invalid: invalidRoleEmails.map(u => u.email)
+                }, {status: 403})
             }
             const roleRows = await query<{ id: number }>("SELECT id FROM roles WHERE name = $1", [body.role])
             if (roleRows.length === 0) return NextResponse.json({error: "Invalid role"}, {status: 400})
-            await query(`UPDATE users SET role_id = $1, updated_at = NOW() WHERE id IN (${placeholders})`, [roleRows[0].id, ...userIds])
+            await query(`UPDATE users
+                         SET role_id = $1,
+                             updated_at = NOW()
+                         WHERE id IN (${placeholders})`, [roleRows[0].id, ...userIds])
         }
 
         // Profile updates
         const profileFields: string[] = []
         const profileValues: any[] = []
-        if (body.diet !== undefined) {profileFields.push("diet = $" + (profileValues.length + 1)); profileValues.push(body.diet)}
-        if (body.bags_checked !== undefined) {profileFields.push("bags_checked = $" + (profileValues.length + 1)); profileValues.push(body.bags_checked)}
-        if (body.attendance !== undefined) {profileFields.push("attendance = $" + (profileValues.length + 1)); profileValues.push(body.attendance)}
-        if (body.allergens !== undefined) {profileFields.push("allergens = $" + (profileValues.length + 1)); profileValues.push(body.allergens)}
+        if (body.diet !== undefined) {
+            profileFields.push("diet = $" + (profileValues.length + 1));
+            profileValues.push(body.diet)
+        }
+        if (body.bags_checked !== undefined) {
+            profileFields.push("bags_checked = $" + (profileValues.length + 1));
+            profileValues.push(body.bags_checked)
+        }
+        if (body.attendance !== undefined) {
+            profileFields.push("attendance = $" + (profileValues.length + 1));
+            profileValues.push(body.attendance)
+        }
+        if (body.allergens !== undefined) {
+            profileFields.push("allergens = $" + (profileValues.length + 1));
+            profileValues.push(body.allergens)
+        }
 
         if (profileFields.length > 0) {
             // Ensure profiles exist for each user
@@ -58,7 +78,10 @@ export async function PATCH(request: Request) {
             // We can't parameterize variable-length IN easily combined with dynamic fields; build second placeholders
             const idPlaceholders = userIds.map((_, i) => `$${profileValues.length - userIds.length + i + 1}`).join(",")
             const finalValues = profileValues
-            const updateSql = `UPDATE profiles SET ${setClause}, updated_at = NOW() WHERE user_id IN (${idPlaceholders})`
+            const updateSql = `UPDATE profiles
+                               SET ${setClause},
+                                   updated_at = NOW()
+                               WHERE user_id IN (${idPlaceholders})`
             await query(updateSql, finalValues)
         }
 

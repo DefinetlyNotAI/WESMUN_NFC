@@ -1,5 +1,5 @@
 import {query} from "./db"
-import type { CreateAuditLogParams } from "@/lib/types/ui"
+import type {CreateAuditLogParams} from "@/lib/types/ui"
 
 export async function createAuditLog({
                                          actorId,
@@ -20,7 +20,9 @@ export async function createAuditLog({
         let actorEmail = null
         if (finalActorId) {
             const actorResult = await query(
-                `SELECT name, email FROM users WHERE id = $1`,
+                `SELECT name, email
+                 FROM users
+                 WHERE id = $1`,
                 [finalActorId]
             )
             if (actorResult.length > 0) {

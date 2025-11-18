@@ -1,5 +1,5 @@
 // Authentication and session types
-import type { UserRole } from "./database"
+import type {UserRole} from "./database"
 
 export type SessionUser = {
     id: string

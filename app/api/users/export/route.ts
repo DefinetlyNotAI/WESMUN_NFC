@@ -18,33 +18,58 @@ export async function GET(request: Request) {
 
         const whereClauses = ["r.name = 'user'", "u.approval_status = 'approved'"]
         const queryParams: any[] = []
-        if (filterBags !== null) { whereClauses.push(`p.bags_checked = $${queryParams.length + 1}`); queryParams.push(filterBags === 'true') }
-        if (filterAttendance !== null) { whereClauses.push(`p.attendance = $${queryParams.length + 1}`); queryParams.push(filterAttendance === 'true') }
-        if (filterDiet !== null) { whereClauses.push(`p.diet = $${queryParams.length + 1}`); queryParams.push(filterDiet) }
+        if (filterBags !== null) {
+            whereClauses.push(`p.bags_checked = $${queryParams.length + 1}`);
+            queryParams.push(filterBags === 'true')
+        }
+        if (filterAttendance !== null) {
+            whereClauses.push(`p.attendance = $${queryParams.length + 1}`);
+            queryParams.push(filterAttendance === 'true')
+        }
+        if (filterDiet !== null) {
+            whereClauses.push(`p.diet = $${queryParams.length + 1}`);
+            queryParams.push(filterDiet)
+        }
 
         if (countOnly) {
             const totalRows = await query<{ count: string }>(
-                `SELECT COUNT(*)::int as count FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'user' AND u.approval_status = 'approved'`
+                `SELECT COUNT(*)::int as count
+                 FROM users u
+                          JOIN roles r ON u.role_id = r.id
+                 WHERE r.name = 'user'
+                   AND u.approval_status = 'approved'`
             )
             const filteredRows = await query<{ count: string }>(
-                `SELECT COUNT(*)::int as count FROM users u LEFT JOIN profiles p ON u.id = p.user_id JOIN roles r ON u.role_id = r.id WHERE ${whereClauses.join(' AND ')}`,
+                `SELECT COUNT(*)::int as count
+                 FROM users u
+                          LEFT JOIN profiles p ON u.id = p.user_id
+                          JOIN roles r ON u.role_id = r.id
+                 WHERE ${whereClauses.join(' AND ')}`,
                 queryParams
             )
-            return NextResponse.json({ total: Number(totalRows[0]?.count || 0), filtered: Number(filteredRows[0]?.count || 0) })
+            return NextResponse.json({
+                total: Number(totalRows[0]?.count || 0),
+                filtered: Number(filteredRows[0]?.count || 0)
+            })
         }
 
-        if (!['csv','pdf'].includes(format)) {
+        if (!['csv', 'pdf'].includes(format)) {
             return NextResponse.json({error: 'Invalid format'}, {status: 400})
         }
 
         const rows = await query<any>(
-            `SELECT u.name, u.email,
-                    p.bags_checked, p.attendance, p.diet, p.allergens,
-                    n.scan_count, n.uuid
+            `SELECT u.name,
+                    u.email,
+                    p.bags_checked,
+                    p.attendance,
+                    p.diet,
+                    p.allergens,
+                    n.scan_count,
+                    n.uuid
              FROM users u
-             LEFT JOIN profiles p ON u.id = p.user_id
-             LEFT JOIN nfc_links n ON u.id = n.user_id
-             JOIN roles r ON u.role_id = r.id
+                      LEFT JOIN profiles p ON u.id = p.user_id
+                      LEFT JOIN nfc_links n ON u.id = n.user_id
+                      JOIN roles r ON u.role_id = r.id
              WHERE ${whereClauses.join(' AND ')}
              ORDER BY u.created_at ASC`,
             queryParams
@@ -53,7 +78,7 @@ export async function GET(request: Request) {
         const dateStr = new Date().toISOString().split('T')[0]
 
         if (format === 'csv') {
-            const header = ["name","email","bags_checked","attendance","received_food","diet","allergens","scan_count"]
+            const header = ["name", "email", "bags_checked", "attendance", "received_food", "diet", "allergens", "scan_count"]
             const lines = [header.join(',')]
             for (const r of rows) {
                 const line = [
@@ -85,19 +110,25 @@ export async function GET(request: Request) {
             const page = pdfDoc.addPage([842, 595]) // A4 landscape
             const font = await pdfDoc.embedFont(pdfLib.StandardFonts.Helvetica)
             const bold = await pdfDoc.embedFont(pdfLib.StandardFonts.HelveticaBold)
-            const { rgb } = pdfLib
+            const {rgb} = pdfLib
 
             const margin = 40
             let x = margin
             let y = page.getHeight() - margin
 
-            const drawText = (text: string, opts: { x?: number; y?: number; size?: number; color?: any; font?: any } = {}) => {
+            const drawText = (text: string, opts: {
+                x?: number;
+                y?: number;
+                size?: number;
+                color?: any;
+                font?: any
+            } = {}) => {
                 page.drawText(String(text), {
                     x: opts.x ?? x,
                     y: opts.y ?? y,
                     size: opts.size ?? 10,
                     font: opts.font ?? font,
-                    color: opts.color ?? rgb(0,0,0)
+                    color: opts.color ?? rgb(0, 0, 0)
                 })
             }
 
@@ -172,7 +203,7 @@ export async function GET(request: Request) {
                             y: opts.y ?? y,
                             size: opts.size ?? 10,
                             font: opts.font ?? font,
-                            color: opts.color ?? rgb(0,0,0)
+                            color: opts.color ?? rgb(0, 0, 0)
                         })
                     }
                     // re-draw header

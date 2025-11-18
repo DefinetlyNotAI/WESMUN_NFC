@@ -114,9 +114,9 @@ export async function PATCH(request: NextRequest, {params}: { params: Promise<{ 
             } else {
                 profileValues.push(userId)
                 const updateQuery = `UPDATE profiles
-                     SET ${profileUpdates.join(", ")},
-                         updated_at = NOW()
-                     WHERE user_id = $${paramIndex}`
+                                     SET ${profileUpdates.join(", ")},
+                                         updated_at = NOW()
+                                     WHERE user_id = $${paramIndex}`
 
                 console.log("[WESMUN] Executing profile update query:", updateQuery, profileValues)
 

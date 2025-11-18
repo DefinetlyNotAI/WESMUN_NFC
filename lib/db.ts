@@ -33,8 +33,8 @@ async function initPoolIfNeeded() {
     }
 
     const sslConfig = caContent
-        ? { rejectUnauthorized: false, ca: caContent }
-        : { rejectUnauthorized: false }
+        ? {rejectUnauthorized: false, ca: caContent}
+        : {rejectUnauthorized: false}
 
     try {
         pool = new Pool({

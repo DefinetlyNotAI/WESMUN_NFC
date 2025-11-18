@@ -55,7 +55,9 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
         // If not found by UUID, check if the uuid parameter is actually a userId
         if (users.length === 0) {
             const userIdCheck = await query<{ uuid: string }>(
-                `SELECT n.uuid FROM nfc_links n WHERE n.user_id = $1`,
+                `SELECT n.uuid
+                 FROM nfc_links n
+                 WHERE n.user_id = $1`,
                 [uuid]
             )
 

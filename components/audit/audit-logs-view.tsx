@@ -13,26 +13,26 @@ import type {AuditLog} from "@/lib/types/ui"
 
 const ACTION_LABELS: Record<string, { label: string; color: string }> = {
     // NFC related
-    nfc_scan: { label: "NFC Scan", color: "bg-blue-500" },
-    nfc_link_create: { label: "NFC Link Created", color: "bg-teal-600" },
+    nfc_scan: {label: "NFC Scan", color: "bg-blue-500"},
+    nfc_link_create: {label: "NFC Link Created", color: "bg-teal-600"},
 
     // Profile updates
-    profile_update: { label: "Profile Update", color: "bg-green-600" },
-    profile_update_admin: { label: "Admin Profile Update", color: "bg-orange-600" },
-    profile_update_admin_bulk: { label: "Bulk Admin Profile Update", color: "bg-orange-700" },
+    profile_update: {label: "Profile Update", color: "bg-green-600"},
+    profile_update_admin: {label: "Admin Profile Update", color: "bg-orange-600"},
+    profile_update_admin_bulk: {label: "Bulk Admin Profile Update", color: "bg-orange-700"},
 
     // Role / user management
-    role_update: { label: "Role Change", color: "bg-purple-600" },
-    user_delete: { label: "User Deleted", color: "bg-red-600" },
-    create_data_only_user: { label: "Data-only User Created", color: "bg-cyan-600" },
+    role_update: {label: "Role Change", color: "bg-purple-600"},
+    user_delete: {label: "User Deleted", color: "bg-red-600"},
+    create_data_only_user: {label: "Data-only User Created", color: "bg-cyan-600"},
 
     // Login / auth
-    user_login: { label: "User Login", color: "bg-green-500" },
-    emergency_admin_login: { label: "Emergency Admin Login", color: "bg-amber-500" },
+    user_login: {label: "User Login", color: "bg-green-500"},
+    emergency_admin_login: {label: "Emergency Admin Login", color: "bg-amber-500"},
 
     // Approval flows
-    user_approved: { label: "User Approved", color: "bg-green-700" },
-    user_rejected: { label: "User Rejected", color: "bg-red-700" },
+    user_approved: {label: "User Approved", color: "bg-green-700"},
+    user_rejected: {label: "User Rejected", color: "bg-red-700"},
 }
 
 export function AuditLogsView() {
@@ -197,7 +197,8 @@ export function AuditLogsView() {
                             disabled={loading}
                             className="transition-all duration-200 hover:scale-105 active:scale-95"
                         >
-                            {loading ? <Loader2 className="mr-1 sm:mr-2 h-4 w-4 animate-spin"/> : <RefreshCw className="mr-1 sm:mr-2 h-4 w-4"/>}
+                            {loading ? <Loader2 className="mr-1 sm:mr-2 h-4 w-4 animate-spin"/> :
+                                <RefreshCw className="mr-1 sm:mr-2 h-4 w-4"/>}
                             <span className="hidden sm:inline">{loading ? "Refreshing" : "Refresh"}</span>
                         </Button>
                     </div>
@@ -215,7 +216,8 @@ export function AuditLogsView() {
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
                         <div className="relative flex-1 min-w-[200px] sm:min-w-[250px]">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"/>
                             <Input
                                 type="text"
                                 placeholder="Search by name, email, action, or IP..."
@@ -229,7 +231,7 @@ export function AuditLogsView() {
                             <label className="text-xs sm:text-sm font-medium whitespace-nowrap">Filter:</label>
                             <Select value={actionFilter} onValueChange={setActionFilter} disabled={loading}>
                                 <SelectTrigger className="w-[150px] sm:w-[200px] text-xs sm:text-sm">
-                                    <SelectValue placeholder="All Actions" />
+                                    <SelectValue placeholder="All Actions"/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All Actions</SelectItem>
@@ -247,31 +249,32 @@ export function AuditLogsView() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">{selectedLogs.size === logs.length && logs.length > 0 ? (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={deselectAll}
-                                disabled={loading}
-                                className="transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm"
-                            >
-                                <CheckSquare className="mr-1 sm:mr-2 h-4 w-4"/>
-                                <span className="hidden sm:inline">Selected all {logs.length} logs</span>
-                                <span className="sm:hidden">All ({logs.length})</span>
-                            </Button>
-                        ) : (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={selectAll}
-                                disabled={logs.length === 0 || loading}
-                                className="transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm"
-                            >
-                                <Square className="mr-1 sm:mr-2 h-4 w-4"/>
-                                <span className="hidden sm:inline">Click to Select all logs</span>
-                                <span className="sm:hidden">Select All</span>
-                            </Button>
-                        )}
+                    <div
+                        className="flex items-center gap-2 w-full sm:w-auto justify-end">{selectedLogs.size === logs.length && logs.length > 0 ? (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={deselectAll}
+                            disabled={loading}
+                            className="transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm"
+                        >
+                            <CheckSquare className="mr-1 sm:mr-2 h-4 w-4"/>
+                            <span className="hidden sm:inline">Selected all {logs.length} logs</span>
+                            <span className="sm:hidden">All ({logs.length})</span>
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={selectAll}
+                            disabled={logs.length === 0 || loading}
+                            className="transition-all duration-200 hover:scale-105 active:scale-95 text-xs sm:text-sm"
+                        >
+                            <Square className="mr-1 sm:mr-2 h-4 w-4"/>
+                            <span className="hidden sm:inline">Click to Select all logs</span>
+                            <span className="sm:hidden">Select All</span>
+                        </Button>
+                    )}
                     </div>
                 </div>
 
@@ -330,7 +333,7 @@ export function AuditLogsView() {
                                                             <p>
                                                                 <span
                                                                     className="font-medium">Target:</span> {log.target_user.name} (
-                                                            {log.target_user.email})
+                                                                {log.target_user.email})
                                                             </p>
                                                         )}
                                                         {log.details && Object.keys(log.details).length > 0 && (

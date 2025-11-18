@@ -1,5 +1,5 @@
 // Component-specific prop types
-import type { UserRole, DietType } from "./database"
+import type {DietType, UserRole} from "./database"
 import React from "react"
 
 // User-related component types

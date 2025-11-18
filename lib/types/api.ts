@@ -1,5 +1,5 @@
 // API request/response types
-import type { UserRole, DietType } from "./database"
+import type {DietType, UserRole} from "./database"
 
 // User update types
 export interface UpdateUserRequest {

@@ -10,7 +10,7 @@ import {AlertTriangle, CheckCircle2, Copy, Loader2, User, Utensils, XCircle} fro
 import {Button} from "@/components/ui/button"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import type {DietType} from "@/lib/types/database"
-import type { UserData, NfcScanViewProps } from "@/lib/types/ui"
+import type {NfcScanViewProps, UserData} from "@/lib/types/ui"
 
 export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     const [loading, setLoading] = useState(true)
@@ -177,8 +177,10 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                                     </div>
                                 )}
                                 <div className="min-w-0 flex-1">
-                                    <CardTitle className="break-words text-lg sm:text-xl">{userData.user.name}</CardTitle>
-                                    <CardDescription className="break-all text-sm">{userData.user.email}</CardDescription>
+                                    <CardTitle
+                                        className="break-words text-lg sm:text-xl">{userData.user.name}</CardTitle>
+                                    <CardDescription
+                                        className="break-all text-sm">{userData.user.email}</CardDescription>
                                 </div>
                             </div>
                             <Badge variant="outline" className="flex-shrink-0">{userData.user.role.name}</Badge>
