@@ -9,6 +9,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Search, Shield, Square, Trash2} from 'lucide-react'
 import Link from "next/link"
 import {Alert, AlertDescription} from "@/components/ui/alert"
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import type {AuditLog} from "@/types/ui"
 import {ACTION_LABELS} from "@/lib/audit";
 
@@ -22,6 +23,9 @@ export function AuditLogsView() {
     const [actionFilter, setActionFilter] = useState<string>("all")
     const [searchQuery, setSearchQuery] = useState<string>("")
     const [debouncedSearch, setDebouncedSearch] = useState<string>("")
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false)
+    const [logToDelete, setLogToDelete] = useState<number | null>(null)
 
     // Debounce search input
     useEffect(() => {
@@ -72,16 +76,22 @@ export function AuditLogsView() {
     }
 
     const deleteLog = async (logId: number) => {
-        if (!confirm("Delete this audit log? This action cannot be undone.")) return
+        setLogToDelete(logId)
+        setDeleteDialogOpen(true)
+    }
+
+    const confirmDeleteLog = async () => {
+        if (logToDelete === null) return
 
         setDeleting(true)
+        setDeleteDialogOpen(false)
         try {
-            const response = await fetch(`/api/audit/${logId}`, {
+            const response = await fetch(`/api/audit/${logToDelete}`, {
                 method: "DELETE"
             })
 
             if (response.ok) {
-                setLogs(logs.filter(l => l.id !== logId))
+                setLogs(logs.filter(l => l.id !== logToDelete))
                 setTotal(total - 1)
             } else {
                 setError("Failed to delete log")
@@ -91,14 +101,18 @@ export function AuditLogsView() {
             setError("Error deleting log")
         } finally {
             setDeleting(false)
+            setLogToDelete(null)
         }
     }
 
     const bulkDelete = async () => {
         if (selectedLogs.size === 0) return
-        if (!confirm(`Delete ${selectedLogs.size} logs? This action cannot be undone.`)) return
+        setBulkDeleteDialogOpen(true)
+    }
 
+    const confirmBulkDelete = async () => {
         setDeleting(true)
+        setBulkDeleteDialogOpen(false)
         try {
             const response = await fetch("/api/audit/bulk-delete", {
                 method: "DELETE",
@@ -351,6 +365,46 @@ export function AuditLogsView() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Delete Single Log Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Audit Log</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete this audit log? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-end gap-2 mt-4">
+                        <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={confirmDeleteLog}>
+                            Delete
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Delete Dialog */}
+            <Dialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Multiple Audit Logs</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete {selectedLogs.size} audit log{selectedLogs.size !== 1 ? 's' : ''}? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-end gap-2 mt-4">
+                        <Button variant="outline" onClick={() => setBulkDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={confirmBulkDelete}>
+                            Delete {selectedLogs.size}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
