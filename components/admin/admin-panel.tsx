@@ -26,7 +26,7 @@ export function AdminPanel() {
     const [copiedUuid, setCopiedUuid] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-    const [userToDelete, setUserToDelete] = useState<{id: string, role?: UserRole} | null>(null)
+    const [userToDelete, setUserToDelete] = useState<{ id: string, role?: UserRole } | null>(null)
 
     const EMERGENCY_ADMIN = process.env.EMERGENCY_ADMIN_USERNAME
 

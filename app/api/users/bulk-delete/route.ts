@@ -6,7 +6,6 @@ import {createAuditLog} from '@/lib/audit'
 import {BulkDeleteBody} from "@/types/api";
 
 
-
 export async function POST(request: Request) {
     try {
         const user = await getCurrentUser()

@@ -48,7 +48,7 @@ export function UsersView() {
 
     // Helper to build payload for export requests
     const buildExportPayload = (overrides: { format?: 'csv' | 'pdf', mode?: string } = {}) => {
-        const payload: Record<string, any> = { format: overrides.format ?? 'csv' }
+        const payload: Record<string, any> = {format: overrides.format ?? 'csv'}
         if (overrides.mode) payload.mode = overrides.mode
         if (filterBags !== 'all') payload.bags = filterBags
         if (filterAttendance !== 'all') payload.attendance = filterAttendance
@@ -61,7 +61,7 @@ export function UsersView() {
         return fetch('/api/users/export', {
             method: 'POST',
             credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload),
         })
     }
@@ -88,7 +88,7 @@ export function UsersView() {
         const run = async () => {
             try {
                 setExportCountLoading(true)
-                const payload = buildExportPayload({ format: 'csv', mode: 'count' })
+                const payload = buildExportPayload({format: 'csv', mode: 'count'})
                 const res = await postUsersExport(payload)
 
                 if (!res.ok) {
@@ -97,7 +97,7 @@ export function UsersView() {
                 }
 
                 const data = await res.json()
-                setExportCount({ filtered: data.filtered ?? 0, total: data.total ?? 0 })
+                setExportCount({filtered: data.filtered ?? 0, total: data.total ?? 0})
             } catch (err) {
                 console.error('[WESMUN] export count error', err)
                 setExportCount(null)
@@ -154,7 +154,7 @@ export function UsersView() {
 
     const downloadExport = async (format: 'csv' | 'pdf') => {
         try {
-            const payload = buildExportPayload({ format })
+            const payload = buildExportPayload({format})
             const res = await postUsersExport(payload)
 
             if (!res.ok) {
@@ -348,7 +348,7 @@ export function UsersView() {
                                                             <Utensils className="h-4 w-4 text-muted-foreground"/>
                                                             <span
                                                                 className="text-muted-foreground capitalize">{user.profile.diet}</span>
-                                                            { /* Only show allergen indicator when a non-empty value exists */ }
+                                                            { /* Only show allergen indicator when a non-empty value exists */}
                                                             {user.profile?.allergens && String(user.profile.allergens).trim() !== '' && (
                                                                 <>
                                                                     <AlertTriangle className="h-4 w-4 text-orange-600"/>

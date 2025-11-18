@@ -392,7 +392,8 @@ export function AuditLogsView() {
                     <DialogHeader>
                         <DialogTitle>Delete Multiple Audit Logs</DialogTitle>
                         <DialogDescription>
-                            Are you sure you want to delete {selectedLogs.size} audit log{selectedLogs.size !== 1 ? 's' : ''}? This action cannot be undone.
+                            Are you sure you want to delete {selectedLogs.size} audit
+                            log{selectedLogs.size !== 1 ? 's' : ''}? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex justify-end gap-2 mt-4">
