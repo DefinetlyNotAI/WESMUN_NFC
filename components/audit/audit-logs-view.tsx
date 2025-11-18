@@ -11,7 +11,7 @@ import Link from "next/link"
 import {Alert, AlertDescription} from "@/components/ui/alert"
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import type {AuditLog} from "@/types/ui"
-import {ACTION_LABELS} from "@/lib/audit";
+import {ACTION_LABELS} from "@/lib/audit-constants"
 
 export function AuditLogsView() {
     const [logs, setLogs] = useState<AuditLog[]>([])
