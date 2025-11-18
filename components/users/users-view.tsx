@@ -28,7 +28,6 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import {cookies} from "next/headers";
 
 export function UsersView() {
     const [users, setUsers] = useState<User[]>([])
@@ -45,6 +44,27 @@ export function UsersView() {
     const [filterDiet, setFilterDiet] = useState<string>("all")
     const [exportCount, setExportCount] = useState<{ filtered: number, total: number } | null>(null)
     const [exportError, setExportError] = useState<string | null>(null)
+    const [exportCountLoading, setExportCountLoading] = useState(false)
+
+    // Helper to build payload for export requests
+    const buildExportPayload = (overrides: { format?: 'csv' | 'pdf', mode?: string } = {}) => {
+        const payload: Record<string, any> = { format: overrides.format ?? 'csv' }
+        if (overrides.mode) payload.mode = overrides.mode
+        if (filterBags !== 'all') payload.bags = filterBags
+        if (filterAttendance !== 'all') payload.attendance = filterAttendance
+        if (filterDiet !== 'all') payload.diet = filterDiet
+        return payload
+    }
+
+    // Centralized POST helper for /api/users/export
+    const postUsersExport = async (payload: Record<string, any>) => {
+        return fetch('/api/users/export', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+    }
 
     useEffect(() => {
         getCurrentUserRole().catch(console.error)
@@ -66,36 +86,40 @@ export function UsersView() {
     useEffect(() => {
         if (!showExportDialog) return
         const run = async () => {
-            const params = new URLSearchParams({format: 'csv', mode: 'count'})
-            if (filterBags !== 'all') params.append('bags', filterBags)
-            if (filterAttendance !== 'all') params.append('attendance', filterAttendance)
-            if (filterDiet !== 'all') params.append('diet', filterDiet)
-            const res = await fetch(`/api/users/export?${params.toString()}`)
-            if (res.ok) {
+            try {
+                setExportCountLoading(true)
+                const payload = buildExportPayload({ format: 'csv', mode: 'count' })
+                const res = await postUsersExport(payload)
+
+                if (!res.ok) {
+                    setExportCount(null)
+                    return
+                }
+
                 const data = await res.json()
-                setExportCount({filtered: data.filtered ?? 0, total: data.total ?? 0})
-            } else {
+                setExportCount({ filtered: data.filtered ?? 0, total: data.total ?? 0 })
+            } catch (err) {
+                console.error('[WESMUN] export count error', err)
                 setExportCount(null)
+            } finally {
+                setExportCountLoading(false)
             }
         }
-        run().catch(() => setExportCount(null))
+        run().catch(() => {
+            setExportCount(null)
+            setExportCountLoading(false)
+        })
     }, [showExportDialog, filterBags, filterAttendance, filterDiet])
 
     const getCurrentUserRole = async () => {
         try {
-            const cookieStore = await cookies();
-            const token = cookieStore.get("session_token")?.value;
-            if (!token) {
-                console.warn("No token found")
-                return
-            }
-
+            // Call the server API route; include credentials so the session cookie is sent by the browser.
             const response = await fetch("/api/auth/validate", {
-                method: "POST",
+                method: "GET",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ token })
+                }
             })
 
             if (!response.ok) {
@@ -130,16 +154,27 @@ export function UsersView() {
 
     const downloadExport = async (format: 'csv' | 'pdf') => {
         try {
-            const params = new URLSearchParams({format})
-            if (filterBags !== "all") params.append("bags", filterBags)
-            if (filterAttendance !== "all") params.append("attendance", filterAttendance)
-            if (filterDiet !== "all") params.append("diet", filterDiet)
+            const payload = buildExportPayload({ format })
+            const res = await postUsersExport(payload)
 
-            const res = await fetch(`/api/users/export?${params.toString()}`)
             if (!res.ok) {
-                setExportError('Export failed');
+                try {
+                    const errJson = await res.json()
+                    setExportError(errJson?.message || 'Export failed')
+                } catch (e) {
+                    setExportError('Export failed')
+                }
                 return
             }
+
+            const contentType = res.headers.get('content-type') || ''
+            if (contentType.includes('application/json')) {
+                const json = await res.json()
+                if (json?.message) setExportError(json.message)
+                else setExportError('Export returned JSON instead of file')
+                return
+            }
+
             const blob = await res.blob()
             const dateStr = new Date().toISOString().split('T')[0]
             const ext = format === 'csv' ? 'csv' : 'pdf'
@@ -154,7 +189,7 @@ export function UsersView() {
             setShowExportDialog(false)
             setExportError(null)
         } catch (e) {
-            console.error(e);
+            console.error(e)
             setExportError('Export error')
         }
     }
@@ -198,15 +233,25 @@ export function UsersView() {
                             <RefreshCw className={`mr-1 sm:mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
                             <span className="hidden sm:inline">Refresh</span>
                         </Button>
+
+                        {/* CSV Button - show full label on larger screens; mobile shows small label under icon */}
                         <Button variant="outline" size="sm" onClick={() => openExportDialog('csv')}
                                 title="Download CSV">
-                            <Download className="mr-1 sm:mr-2 h-4 w-4"/>
-                            <span className="hidden sm:inline">CSV</span>
+                            <div className="flex flex-col items-center">
+                                <Download className="h-4 w-4"/>
+                                <span className="block xs:hidden text-[10px] mt-1">CSV</span>
+                            </div>
+                            <span className="hidden sm:inline ml-2">CSV</span>
                         </Button>
+
+                        {/* PDF Button */}
                         <Button variant="outline" size="sm" onClick={() => openExportDialog('pdf')}
                                 title="Download PDF">
-                            <Download className="mr-1 sm:mr-2 h-4 w-4"/>
-                            <span className="hidden sm:inline">PDF</span>
+                            <div className="flex flex-col items-center">
+                                <Download className="h-4 w-4"/>
+                                <span className="block xs:hidden text-[10px] mt-1">PDF</span>
+                            </div>
+                            <span className="hidden sm:inline ml-2">PDF</span>
                         </Button>
                     </div>
                 </div>
@@ -237,11 +282,11 @@ export function UsersView() {
                                                     <img
                                                         src={user.image || "//wesmun.svg"}
                                                         alt={user.name}
-                                                        className="h-12 w-12 rounded-full"
+                                                        className="h-12 w-12 rounded-full hidden xs:block"
                                                     />
                                                 ) : (
                                                     <div
-                                                        className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                                                        className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-medium xs:flex">
                                                         {user.name.charAt(0)}
                                                     </div>
                                                 )}
@@ -303,12 +348,15 @@ export function UsersView() {
                                                             <Utensils className="h-4 w-4 text-muted-foreground"/>
                                                             <span
                                                                 className="text-muted-foreground capitalize">{user.profile.diet}</span>
-                                                            <>
-                                                                <AlertTriangle className="h-4 w-4 text-orange-600"/>
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    Delegate has allergens
-                                                                </Badge>
-                                                            </>
+                                                            { /* Only show allergen indicator when a non-empty value exists */ }
+                                                            {user.profile?.allergens && String(user.profile.allergens).trim() !== '' && (
+                                                                <>
+                                                                    <AlertTriangle className="h-4 w-4 text-orange-600"/>
+                                                                    <Badge variant="outline" className="text-xs">
+                                                                        Delegate has allergens
+                                                                    </Badge>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -465,9 +513,22 @@ export function UsersView() {
                             <Button variant="outline" onClick={() => setShowExportDialog(false)}>
                                 Cancel
                             </Button>
-                            <Button onClick={() => downloadExport(exportFormat)} className="flex-1">
-                                <Download className="mr-2 h-4 w-4"/>
-                                Download {exportFormat.toUpperCase()}
+                            <Button
+                                onClick={() => downloadExport(exportFormat)}
+                                className="flex-1"
+                                disabled={exportCountLoading}
+                            >
+                                {exportCountLoading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                        Calculating...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Download className="mr-2 h-4 w-4"/>
+                                        Download {exportFormat.toUpperCase()}
+                                    </>
+                                )}
                             </Button>
                         </div>
                     </div>
