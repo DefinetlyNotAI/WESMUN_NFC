@@ -3,10 +3,9 @@ import {getCurrentUser} from '@/lib/session'
 import {hasPermission} from '@/lib/permissions'
 import {query} from '@/lib/db'
 import {createAuditLog} from '@/lib/audit'
+import {BulkDeleteBody} from "@/types/api";
 
-interface BulkDeleteBody {
-    userIds?: string[]
-}
+
 
 export async function POST(request: Request) {
     try {

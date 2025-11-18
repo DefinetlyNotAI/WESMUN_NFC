@@ -1,4 +1,4 @@
-import type {UserRole} from "@/lib/types/database"
+import type {UserRole} from "@/types/database"
 
 /**
  * Get the effective user role, taking debug mode into account.
@@ -16,11 +16,3 @@ export function getEffectiveRole(actualRole: UserRole): UserRole {
     const debugRole = getDebugRole()
     return debugRole || actualRole
 }
-
-/**
- * Check if debug mode is currently active
- */
-export function isDebugModeActive(): boolean {
-    return getDebugRole() !== null
-}
-

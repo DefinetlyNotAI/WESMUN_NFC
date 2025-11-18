@@ -6,34 +6,14 @@ import React, {useEffect, useState} from "react"
 import {Button} from "@/components/ui/button"
 import {ArrowLeft, Loader2, RefreshCw} from 'lucide-react'
 import Link from "next/link"
-import type {DietType, UserRole} from "@/lib/types/database"
+import type {UserRole} from "@/types/database"
 import {PendingApprovals} from "./pending-approvals"
 import {SecurityCreateUsers} from "./security-create-users"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {UserEditDialog} from "../users/user-edit-dialog"
 import {UserManagementSection} from "@/components/admin/user-management";
 import {Alert, AlertDescription} from "@/components/ui/alert"
-
-interface User {
-    id: string
-    name: string
-    email: string
-    image: string | null
-    profile: {
-        bags_checked: boolean
-        attendance: boolean
-        received_food: boolean
-        diet: DietType
-        allergens: string | null
-    }
-    nfc_link: {
-        uuid: string
-        scan_count: number
-    } | null
-    role: {
-        name: UserRole
-    }
-}
+import {User} from "@/types";
 
 export function AdminPanel() {
     const [users, setUsers] = useState<User[]>([])

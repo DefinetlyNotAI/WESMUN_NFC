@@ -3,15 +3,7 @@ import {getCurrentUser} from "@/lib/session"
 import {query} from "@/lib/db"
 import {createAuditLog} from "@/lib/audit"
 import {canUpdateField} from "@/lib/permissions"
-import type {DietType} from "@/lib/types/database"
-
-interface UpdateProfileRequest {
-    bags_checked?: boolean
-    attendance?: boolean
-    received_food?: boolean
-    diet?: DietType
-    allergens?: string
-}
+import {UpdateProfileRequest} from "@/types/api";
 
 export async function PATCH(request: NextRequest, {params}: { params: Promise<{ uuid: string }> }) {
     try {

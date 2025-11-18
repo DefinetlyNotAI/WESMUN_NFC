@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
@@ -9,31 +9,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {ArrowLeft, CheckSquare, Loader2, RefreshCw, Search, Shield, Square, Trash2} from 'lucide-react'
 import Link from "next/link"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import type {AuditLog} from "@/lib/types/ui"
-
-const ACTION_LABELS: Record<string, { label: string; color: string }> = {
-    // NFC related
-    nfc_scan: {label: "NFC Scan", color: "bg-blue-500"},
-    nfc_link_create: {label: "NFC Link Created", color: "bg-teal-600"},
-
-    // Profile updates
-    profile_update: {label: "Profile Update", color: "bg-green-600"},
-    profile_update_admin: {label: "Admin Profile Update", color: "bg-orange-600"},
-    profile_update_admin_bulk: {label: "Bulk Admin Profile Update", color: "bg-orange-700"},
-
-    // Role / user management
-    role_update: {label: "Role Change", color: "bg-purple-600"},
-    user_delete: {label: "User Deleted", color: "bg-red-600"},
-    create_data_only_user: {label: "Data-only User Created", color: "bg-cyan-600"},
-
-    // Login / auth
-    user_login: {label: "User Login", color: "bg-green-500"},
-    emergency_admin_login: {label: "Emergency Admin Login", color: "bg-amber-500"},
-
-    // Approval flows
-    user_approved: {label: "User Approved", color: "bg-green-700"},
-    user_rejected: {label: "User Rejected", color: "bg-red-700"},
-}
+import type {AuditLog} from "@/types/ui"
+import {ACTION_LABELS} from "@/lib/audit";
 
 export function AuditLogsView() {
     const [logs, setLogs] = useState<AuditLog[]>([])

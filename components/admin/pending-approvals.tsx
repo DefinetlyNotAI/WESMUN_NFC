@@ -6,14 +6,7 @@ import {Button} from "@/components/ui/button"
 import {Badge} from "@/components/ui/badge"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {Bell, CheckCircle2, Loader2, XCircle} from "lucide-react"
-
-interface PendingUser {
-    id: string
-    name: string
-    email: string
-    created_at: string
-    approval_status: string
-}
+import {PendingUser} from "@/types";
 
 export function PendingApprovals() {
     const [users, setUsers] = useState<PendingUser[]>([])

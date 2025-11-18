@@ -1,6 +1,6 @@
 import "server-only"
 
-import type {SessionUser} from "@/lib/types"
+import type {SessionUser} from "@/types"
 import {cookies} from "next/headers"
 
 // Re-export for convenience

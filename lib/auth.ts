@@ -1,6 +1,6 @@
 import "server-only"
 import {query} from "./db"
-import type {DietType, User, UserRole} from "./types/database"
+import type {DietType, User, UserRole} from "../types/database"
 import {createAuditLog} from "./audit"
 import {createHash, randomBytes} from "crypto"
 

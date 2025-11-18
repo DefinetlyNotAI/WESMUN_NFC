@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server"
 import {getCurrentUser} from "@/lib/session"
 import {createDataOnlyUser} from "@/lib/auth"
-import type {DietType} from "@/lib/types/database"
+import type {DietType} from "@/types/database"
 
 export async function POST(request: Request) {
     try {

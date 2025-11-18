@@ -1,12 +1,7 @@
 import {redirect} from "next/navigation"
 import {getCurrentUser} from "@/lib/session"
 import {NfcScanView} from "@/components/nfc/nfc-scan-view"
-
-interface NfcPageProps {
-    params: {
-        uuid: string
-    }
-}
+import {NfcPageProps} from "@/types/components";
 
 export default async function NfcPage({params}: NfcPageProps) {
     const user = await getCurrentUser()

@@ -3,7 +3,7 @@ import {getCurrentUser} from "@/lib/session"
 import {query} from "@/lib/db"
 import {hasPermission} from "@/lib/permissions"
 import {createAuditLog} from "@/lib/audit"
-import type {UpdateUserRequest} from "@/lib/types/api"
+import type {UpdateUserRequest} from "@/types/api"
 
 export async function PATCH(request: NextRequest, {params}: { params: Promise<{ userId: string }> }) {
     try {

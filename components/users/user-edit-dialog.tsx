@@ -7,10 +7,10 @@ import {Label} from "@/components/ui/label"
 import {Badge} from "@/components/ui/badge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Loader2} from 'lucide-react'
-import type {DietType, UserRole} from "@/lib/types/database"
+import type {DietType, UserRole} from "@/types/database"
 import {Textarea} from "@/components/ui/textarea"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import type {UserEditDialogProps} from "@/lib/types/ui"
+import type {UserEditDialogProps} from "@/types/ui"
 
 export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialogProps) {
     const [diet, setDiet] = useState<DietType>("veg")

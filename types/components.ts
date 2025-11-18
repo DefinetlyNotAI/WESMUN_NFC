@@ -87,6 +87,12 @@ export interface NfcScanViewProps {
     userRole: UserRole
 }
 
+export interface NfcPageProps {
+    params: {
+        uuid: string
+    }
+}
+
 // Home/Dashboard component types
 export interface HomePageClientProps {
     user: {
@@ -129,4 +135,3 @@ export interface StatusIconProps {
     activeLabel: string
     inactiveLabel: string
 }
-
