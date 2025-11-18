@@ -4,6 +4,25 @@ import {query} from "@/lib/db"
 import {createAuditLog} from "@/lib/audit"
 import type {NfcLink, Profile, Role, User} from "@/types/database"
 
+/**
+ * Validates if a string is a valid NFC UUID format
+ * Accepts the custom format used by the application: base36-base36
+ * Example: kptfal4nobb-esj3nkod5g
+ */
+function isValidUUID(uuid: string): boolean {
+    // Custom NFC UUID format: alphanumeric-alphanumeric (base36)
+    // Each part is typically 10-13 characters
+    const nfcUuidRegex = /^[a-z0-9]+-[a-z0-9]+$/i
+    return nfcUuidRegex.test(uuid) && uuid.length >= 10 && uuid.length <= 50
+}
+
+/**
+ * Checks if a string is a numeric user ID
+ */
+function isNumericUserId(value: string): boolean {
+    return /^\d+$/.test(value)
+}
+
 export async function GET(request: NextRequest, {params}: { params: Promise<{ uuid: string }> }) {
     try {
         const user = await getCurrentUser()
@@ -15,7 +34,46 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
 
         const {uuid} = await params
 
-        // First, try to find by UUID
+        // Validate the format of the parameter
+        if (!uuid || uuid.trim() === "") {
+            return NextResponse.json({error: "Invalid NFC identifier"}, {status: 400})
+        }
+
+        // Check if it's a numeric user ID
+        if (isNumericUserId(uuid)) {
+            // Look up the NFC UUID for this user ID
+            const userIdCheck = await query<{ uuid: string; approval_status: string }>(
+                `SELECT n.uuid, u.approval_status
+                 FROM nfc_links n
+                 JOIN users u ON n.user_id = u.id
+                 WHERE n.user_id = $1`,
+                [uuid]
+            )
+
+            if (userIdCheck.length > 0) {
+                // Check if user is approved
+                if (userIdCheck[0].approval_status !== 'approved') {
+                    return NextResponse.json({error: "User not approved"}, {status: 404})
+                }
+
+                // Found a UUID for this userId - return redirect info
+                return NextResponse.json({
+                    redirect: true,
+                    correctUuid: userIdCheck[0].uuid,
+                    message: "Redirecting to NFC UUID"
+                }, {status: 307}) // Temporary redirect
+            }
+
+            // User ID provided but no NFC link found
+            return NextResponse.json({error: "NFC link not found"}, {status: 404})
+        }
+
+        // Check if it's a valid UUID format
+        if (!isValidUUID(uuid)) {
+            return NextResponse.json({error: "Invalid UUID format"}, {status: 400})
+        }
+
+        // Try to find by UUID
         const users = await query<User & { profile: Profile; nfc_link: NfcLink; role: Role }>(
             `SELECT u.*,
                     json_build_object(
@@ -52,24 +110,8 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
             [uuid],
         )
 
-        // If not found by UUID, check if the uuid parameter is actually a userId
+        // If not found, return 404
         if (users.length === 0) {
-            const userIdCheck = await query<{ uuid: string }>(
-                `SELECT n.uuid
-                 FROM nfc_links n
-                 WHERE n.user_id = $1`,
-                [uuid]
-            )
-
-            if (userIdCheck.length > 0) {
-                // Found a UUID for this userId - return redirect info
-                return NextResponse.json({
-                    redirect: true,
-                    correctUuid: userIdCheck[0].uuid,
-                    message: "Incorrect UUID format - use the NFC UUID instead of user ID"
-                }, {status: 307}) // Temporary redirect
-            }
-
             return NextResponse.json({error: "NFC link not found"}, {status: 404})
         }
 
@@ -105,6 +147,13 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
         })
     } catch (error) {
         console.error("[WESMUN] NFC scan error:", error)
+
+        // Check if it's a database constraint error (likely means record doesn't exist)
+        if (error instanceof Error && error.message.includes('no rows')) {
+            return NextResponse.json({error: "NFC link not found"}, {status: 404})
+        }
+
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }
+
