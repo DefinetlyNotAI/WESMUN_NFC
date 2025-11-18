@@ -2,7 +2,7 @@
 // Import this file to access any type in the system
 
 // Database types
-export type { UserRole, DietType, Role, User as DbUser, Profile, NfcLink } from "./database"
+export type {UserRole, DietType, Role, User as DbUser, Profile, NfcLink} from "./database"
 
 // API types
 export type {

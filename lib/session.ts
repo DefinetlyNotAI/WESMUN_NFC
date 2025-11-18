@@ -1,10 +1,10 @@
 import "server-only"
 
-import type { SessionUser } from "@/lib/types"
+import type {SessionUser} from "@/lib/types"
 import {cookies} from "next/headers"
 
 // Re-export for convenience
-export type { SessionUser }
+export type {SessionUser}
 
 function getBaseUrl() {
     if (typeof window !== "undefined") return "";

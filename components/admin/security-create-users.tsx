@@ -11,7 +11,7 @@ import {Alert, AlertDescription} from "@/components/ui/alert"
 import {AlertCircle, CheckCircle2, Copy, Loader2, Plus, Utensils} from 'lucide-react'
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import type {DietType} from "@/lib/types/database"
-import type { CreatedUser } from "@/lib/types/ui"
+import type {CreatedUser} from "@/lib/types/ui"
 
 export function SecurityCreateUsers() {
     const [activeTab, setActiveTab] = useState("single")

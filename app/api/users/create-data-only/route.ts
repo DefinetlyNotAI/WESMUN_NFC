@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
         if (allergens && typeof allergens === 'string' && allergens.length > 500) {
             return NextResponse.json({error: "Allergens field too long"}, {status: 400})
-       }
+        }
 
         // Some compiled type info may still expect a smaller arity; cast to any to allow the optional allergens param
         const createFn = createDataOnlyUser as unknown as (...args: any[]) => Promise<any>

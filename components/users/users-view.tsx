@@ -10,19 +10,19 @@ import {
     ArrowLeft,
     CheckCircle2,
     Copy,
+    Download,
     Edit2,
     Eye,
     Loader2,
     RefreshCw,
     Search,
     Utensils,
-    XCircle,
-    Download
+    XCircle
 } from 'lucide-react'
 import Link from "next/link"
 import type {UserRole} from "@/lib/types/database"
 import {UserEditDialog} from "./user-edit-dialog"
-import type { User } from "@/lib/types/ui"
+import type {User} from "@/lib/types/ui"
 import {copyUuid} from "@/lib/copyUUID"
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
@@ -42,7 +42,7 @@ export function UsersView() {
     const [filterBags, setFilterBags] = useState<string>("all")
     const [filterAttendance, setFilterAttendance] = useState<string>("all")
     const [filterDiet, setFilterDiet] = useState<string>("all")
-    const [exportCount, setExportCount] = useState<{filtered:number,total:number} | null>(null)
+    const [exportCount, setExportCount] = useState<{ filtered: number, total: number } | null>(null)
     const [exportError, setExportError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -62,7 +62,7 @@ export function UsersView() {
     }, [searchQuery, users])
 
     // fetch counts when export dialog opens or filters change
-    useEffect(()=>{
+    useEffect(() => {
         if (!showExportDialog) return
         const run = async () => {
             const params = new URLSearchParams({format: 'csv', mode: 'count'})
@@ -77,7 +77,7 @@ export function UsersView() {
                 setExportCount(null)
             }
         }
-        run().catch(()=>setExportCount(null))
+        run().catch(() => setExportCount(null))
     }, [showExportDialog, filterBags, filterAttendance, filterDiet])
 
     const getCurrentUserRole = async () => {
@@ -118,7 +118,10 @@ export function UsersView() {
             if (filterDiet !== "all") params.append("diet", filterDiet)
 
             const res = await fetch(`/api/users/export?${params.toString()}`)
-            if (!res.ok) { setExportError('Export failed'); return }
+            if (!res.ok) {
+                setExportError('Export failed');
+                return
+            }
             const blob = await res.blob()
             const dateStr = new Date().toISOString().split('T')[0]
             const ext = format === 'csv' ? 'csv' : 'pdf'
@@ -132,7 +135,10 @@ export function UsersView() {
             URL.revokeObjectURL(url)
             setShowExportDialog(false)
             setExportError(null)
-        } catch (e) { console.error(e); setExportError('Export error') }
+        } catch (e) {
+            console.error(e);
+            setExportError('Export error')
+        }
     }
 
     const openExportDialog = (format: 'csv' | 'pdf') => {
@@ -174,12 +180,14 @@ export function UsersView() {
                             <RefreshCw className={`mr-1 sm:mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
                             <span className="hidden sm:inline">Refresh</span>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={()=>openExportDialog('csv')} title="Download CSV">
-                            <Download className="mr-1 sm:mr-2 h-4 w-4" />
+                        <Button variant="outline" size="sm" onClick={() => openExportDialog('csv')}
+                                title="Download CSV">
+                            <Download className="mr-1 sm:mr-2 h-4 w-4"/>
                             <span className="hidden sm:inline">CSV</span>
                         </Button>
-                        <Button variant="outline" size="sm" onClick={()=>openExportDialog('pdf')} title="Download PDF">
-                            <Download className="mr-1 sm:mr-2 h-4 w-4" />
+                        <Button variant="outline" size="sm" onClick={() => openExportDialog('pdf')}
+                                title="Download PDF">
+                            <Download className="mr-1 sm:mr-2 h-4 w-4"/>
                             <span className="hidden sm:inline">PDF</span>
                         </Button>
                     </div>
@@ -275,7 +283,8 @@ export function UsersView() {
 
                                                         <div className="flex items-center gap-1.5 text-sm">
                                                             <Utensils className="h-4 w-4 text-muted-foreground"/>
-                                                            <span className="text-muted-foreground capitalize">{user.profile.diet}</span>
+                                                            <span
+                                                                className="text-muted-foreground capitalize">{user.profile.diet}</span>
                                                             <>
                                                                 <AlertTriangle className="h-4 w-4 text-orange-600"/>
                                                                 <Badge variant="outline" className="text-xs">
@@ -371,7 +380,7 @@ export function UsersView() {
                             <Label>Bags Checked</Label>
                             <Select value={filterBags} onValueChange={setFilterBags}>
                                 <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All (No Filter)</SelectItem>
@@ -385,7 +394,7 @@ export function UsersView() {
                             <Label>Attendance</Label>
                             <Select value={filterAttendance} onValueChange={setFilterAttendance}>
                                 <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All (No Filter)</SelectItem>
@@ -399,7 +408,7 @@ export function UsersView() {
                             <Label>Diet Preference</Label>
                             <Select value={filterDiet} onValueChange={setFilterDiet}>
                                 <SelectTrigger>
-                                    <SelectValue />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All (No Filter)</SelectItem>
@@ -412,15 +421,22 @@ export function UsersView() {
                         <div className="rounded-lg bg-muted p-3 text-sm">
                             <p className="font-medium mb-1">Export Summary</p>
                             <p className="text-muted-foreground">
-                                Format: <span className="font-mono text-xs bg-background px-1 rounded">{exportFormat.toUpperCase()}</span>
-                                {filterBags !== "all" && <> • Bags: {filterBags === "true" ? "Checked" : "Not Checked"}</>}
-                                {filterAttendance !== "all" && <> • Attendance: {filterAttendance === "true" ? "Yes" : "No"}</>}
-                                {filterDiet !== "all" && <> • Diet: {filterDiet === "veg" ? "Vegetarian" : "Non-Vegetarian"}</>}
-                                {filterBags === "all" && filterAttendance === "all" && filterDiet === "all" && <> • No filters applied</>}
+                                Format: <span
+                                className="font-mono text-xs bg-background px-1 rounded">{exportFormat.toUpperCase()}</span>
+                                {filterBags !== "all" && <> •
+                                    Bags: {filterBags === "true" ? "Checked" : "Not Checked"}</>}
+                                {filterAttendance !== "all" && <> •
+                                    Attendance: {filterAttendance === "true" ? "Yes" : "No"}</>}
+                                {filterDiet !== "all" && <> •
+                                    Diet: {filterDiet === "veg" ? "Vegetarian" : "Non-Vegetarian"}</>}
+                                {filterBags === "all" && filterAttendance === "all" && filterDiet === "all" && <> • No
+                                    filters applied</>}
                             </p>
                             <p className="text-xs mt-1">
                                 {exportCount ? (
-                                    <>This export will include <span className="font-medium">{exportCount.filtered}</span> of <span className="font-medium">{exportCount.total}</span> approved users.</>
+                                    <>This export will include <span
+                                        className="font-medium">{exportCount.filtered}</span> of <span
+                                        className="font-medium">{exportCount.total}</span> approved users.</>
                                 ) : (
                                     <>Calculating included users…</>
                                 )}
@@ -432,7 +448,7 @@ export function UsersView() {
                                 Cancel
                             </Button>
                             <Button onClick={() => downloadExport(exportFormat)} className="flex-1">
-                                <Download className="mr-2 h-4 w-4" />
+                                <Download className="mr-2 h-4 w-4"/>
                                 Download {exportFormat.toUpperCase()}
                             </Button>
                         </div>

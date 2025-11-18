@@ -10,7 +10,7 @@ import {Loader2} from 'lucide-react'
 import type {DietType, UserRole} from "@/lib/types/database"
 import {Textarea} from "@/components/ui/textarea"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import type { UserEditDialogProps } from "@/lib/types/ui"
+import type {UserEditDialogProps} from "@/lib/types/ui"
 
 export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialogProps) {
     const [diet, setDiet] = useState<DietType>("veg")
@@ -161,7 +161,8 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="allergens">Allergens {allergens.length > 0 && <span className="text-muted-foreground">({allergens.length}/500)</span>}</Label>
+                        <Label htmlFor="allergens">Allergens {allergens.length > 0 &&
+                            <span className="text-muted-foreground">({allergens.length}/500)</span>}</Label>
                         <Textarea
                             id="allergens"
                             value={allergens}
