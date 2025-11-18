@@ -5,6 +5,25 @@ import {createAuditLog} from "@/lib/audit"
 import {canUpdateField} from "@/lib/permissions"
 import {UpdateProfileRequest} from "@/types/api";
 
+/**
+ * Validates if a string is a valid NFC UUID format
+ * Accepts the custom format used by the application: base36-base36
+ * Example: kptfal4nobb-esj3nkod5g
+ */
+function isValidUUID(uuid: string): boolean {
+    // Custom NFC UUID format: alphanumeric-alphanumeric (base36)
+    // Each part is typically 10-13 characters
+    const nfcUuidRegex = /^[a-z0-9]+-[a-z0-9]+$/i
+    return nfcUuidRegex.test(uuid) && uuid.length >= 10 && uuid.length <= 50
+}
+
+/**
+ * Checks if a string is a numeric user ID
+ */
+function isNumericUserId(value: string): boolean {
+    return /^\d+$/.test(value)
+}
+
 export async function PATCH(request: NextRequest, {params}: { params: Promise<{ uuid: string }> }) {
     try {
         const user = await getCurrentUser()
@@ -14,6 +33,22 @@ export async function PATCH(request: NextRequest, {params}: { params: Promise<{ 
         }
 
         const {uuid} = await params
+
+        // Validate the format of the parameter
+        if (!uuid || uuid.trim() === "") {
+            return NextResponse.json({error: "Invalid NFC identifier"}, {status: 400})
+        }
+
+        // Check if it's a numeric user ID (not allowed for updates)
+        if (isNumericUserId(uuid)) {
+            return NextResponse.json({error: "Use NFC UUID instead of user ID"}, {status: 400})
+        }
+
+        // Check if it's a valid UUID format
+        if (!isValidUUID(uuid)) {
+            return NextResponse.json({error: "Invalid UUID format"}, {status: 400})
+        }
+
         const body: UpdateProfileRequest = await request.json()
 
         if (body.allergens && body.allergens.length > 500) {
@@ -111,6 +146,13 @@ export async function PATCH(request: NextRequest, {params}: { params: Promise<{ 
         return NextResponse.json({success: true})
     } catch (error) {
         console.error("[WESMUN] Profile update error:", error)
+
+        // Check if it's a database constraint error (likely means record doesn't exist)
+        if (error instanceof Error && error.message.includes('no rows')) {
+            return NextResponse.json({error: "NFC link not found"}, {status: 404})
+        }
+
         return NextResponse.json({error: "Internal server error"}, {status: 500})
     }
 }
+
