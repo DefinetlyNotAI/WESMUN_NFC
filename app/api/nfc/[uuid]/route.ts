@@ -2,7 +2,7 @@ import {type NextRequest, NextResponse} from "next/server"
 import {getCurrentUser} from "@/lib/session"
 import {query} from "@/lib/db"
 import {createAuditLog} from "@/lib/audit"
-import type {NfcLink, Profile, Role, User} from "@/lib/types/database"
+import type {NfcLink, Profile, Role, User} from "@/types/database"
 
 export async function GET(request: NextRequest, {params}: { params: Promise<{ uuid: string }> }) {
     try {

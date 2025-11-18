@@ -7,8 +7,8 @@ import Link from "next/link"
 import LogoutButton from "@/components/auth/sign-out-handler"
 import {DebugMode} from "@/components/debug/debug-mode"
 import {getEffectiveRole} from "@/lib/debug"
-import type {UserRole} from "@/lib/types/database"
-import type {HomePageClientProps} from "@/lib/types/ui"
+import type {UserRole} from "@/types/database"
+import type {HomePageClientProps} from "@/types/ui"
 
 export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
     const [effectiveRole, setEffectiveRole] = useState<UserRole>(user.role)

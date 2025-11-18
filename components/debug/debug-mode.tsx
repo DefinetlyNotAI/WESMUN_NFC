@@ -5,8 +5,8 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} fr
 import {Button} from "@/components/ui/button"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Badge} from "@/components/ui/badge"
-import type {UserRole} from "@/lib/types/database"
-import type {DebugModeProps} from "@/lib/types/ui"
+import type {UserRole} from "@/types/database"
+import type {DebugModeProps} from "@/types/ui"
 
 export function DebugMode({currentRole, isEmergencyAdmin}: DebugModeProps) {
     const [isOpen, setIsOpen] = useState(false)

@@ -20,9 +20,9 @@ import {
     XCircle
 } from 'lucide-react'
 import Link from "next/link"
-import type {UserRole} from "@/lib/types/database"
+import type {UserRole} from "@/types/database"
 import {UserEditDialog} from "./user-edit-dialog"
-import type {User} from "@/lib/types/ui"
+import type {User} from "@/types/ui"
 import {copyUuid} from "@/lib/copyUUID"
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"

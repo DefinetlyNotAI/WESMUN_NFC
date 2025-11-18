@@ -6,25 +6,16 @@ import {Input} from "@/components/ui/input"
 import {Badge} from "@/components/ui/badge"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import {AlertTriangle, CheckCircle2, Copy, Search, UserPlus, Utensils, XCircle} from "lucide-react"
+import {AlertTriangle, Copy, Search, UserPlus, Utensils} from "lucide-react"
 import React, {useState} from "react"
 import {UserEditDialog} from "../users/user-edit-dialog"
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from "@/components/ui/dialog"
 import {copyUuid} from "@/lib/copyUUID"
-import type {DietType, UserRole} from "@/lib/types/database"
+import type {DietType, UserRole} from "@/types/database"
 import {UserActions} from "@/components/admin/user-action";
-import type {StatusIconProps, User, UserManagementProps} from "@/lib/types/ui"
+import type {User, UserManagementProps} from "@/types/ui"
+import {StatusIcon} from "@/components/ui/status";
 
-const StatusIcon: React.FC<StatusIconProps> = ({active, activeLabel, inactiveLabel}) => (
-    <div className="flex items-center gap-2">
-        {active ? (
-            <CheckCircle2 className="h-4 w-4 text-green-600"/>
-        ) : (
-            <XCircle className="h-4 w-4 text-muted-foreground"/>
-        )}
-        <span className="text-xs text-muted-foreground">{active ? activeLabel : inactiveLabel}</span>
-    </div>
-)
 
 export function UserManagementSection(props: UserManagementProps) {
     const {
@@ -310,6 +301,11 @@ export function UserManagementSection(props: UserManagementProps) {
                                                                 />
                                                                 <StatusIcon
                                                                     active={user.profile.attendance}
+                                                                    activeLabel="Attendance"
+                                                                    inactiveLabel="No Attendance"
+                                                                />
+                                                                <StatusIcon
+                                                                    active={user.profile.received_food}
                                                                     activeLabel="Attendance"
                                                                     inactiveLabel="No Attendance"
                                                                 />

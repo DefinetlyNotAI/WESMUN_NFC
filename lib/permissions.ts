@@ -1,4 +1,4 @@
-import type {UserRole} from "@/lib/types"
+import type {UserRole} from "@/types"
 
 /**
  * Permission meanings (applies across all roles):

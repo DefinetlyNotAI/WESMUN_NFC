@@ -1,4 +1,4 @@
-import type {UserRole} from "@/lib/types/database"
+import type {UserRole} from "@/types/database"
 
 declare module "next-auth" {
     interface User {

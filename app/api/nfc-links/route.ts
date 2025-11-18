@@ -4,10 +4,8 @@ import {query} from "@/lib/db"
 import {hasPermission} from "@/lib/permissions"
 import {createAuditLog} from "@/lib/audit"
 import {randomUUID} from "crypto"
+import {CreateNfcLinkRequest} from "@/types/api";
 
-interface CreateNfcLinkRequest {
-    userId: string
-}
 
 export async function POST(request: NextRequest) {
     try {

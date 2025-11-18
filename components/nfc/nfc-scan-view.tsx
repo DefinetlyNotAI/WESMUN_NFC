@@ -9,8 +9,8 @@ import {Alert, AlertDescription} from "@/components/ui/alert"
 import {AlertTriangle, CheckCircle2, Copy, Loader2, User, Utensils, XCircle} from 'lucide-react'
 import {Button} from "@/components/ui/button"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import type {DietType} from "@/lib/types/database"
-import type {NfcScanViewProps, UserData} from "@/lib/types/ui"
+import type {DietType} from "@/types/database"
+import type {NfcScanViewProps, UserData} from "@/types/ui"
 
 export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     const [loading, setLoading] = useState(true)

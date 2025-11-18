@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button"
 import {Edit2, Trash2} from "lucide-react"
-import type {UserActionsProps} from "@/lib/types/ui"
+import type {UserActionsProps} from "@/types/ui"
 
 export function UserActions({
                                 user,

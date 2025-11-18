@@ -21,6 +21,10 @@ export interface BulkUpdateBody {
     allergens?: string | null
 }
 
+export interface BulkDeleteBody {
+    userIds?: string[]
+}
+
 // Export types
 export interface ExportParams {
     format: "csv" | "pdf"
@@ -86,6 +90,14 @@ export interface NfcUpdateRequest {
     received_food?: boolean
 }
 
+export interface UpdateProfileRequest {
+    bags_checked?: boolean
+    attendance?: boolean
+    received_food?: boolean
+    diet?: DietType
+    allergens?: string
+}
+
 // Admin approval types
 export interface ApprovalRequest {
     userId: string
@@ -97,5 +109,9 @@ export interface PendingUser {
     name: string
     email: string
     created_at: string
+    approval_status: string
 }
 
+export interface CreateNfcLinkRequest {
+    userId: string
+}

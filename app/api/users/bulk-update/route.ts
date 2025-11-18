@@ -3,7 +3,7 @@ import {getCurrentUser} from "@/lib/session"
 import {query} from "@/lib/db"
 import {hasPermission} from "@/lib/permissions"
 import {createAuditLog} from "@/lib/audit"
-import type {BulkUpdateBody} from "@/lib/types/api"
+import type {BulkUpdateBody} from "@/types/api"
 
 export async function PATCH(request: Request) {
     try {
