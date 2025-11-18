@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         const dateStr = new Date().toISOString().split('T')[0]
 
         if (format === 'csv') {
-            const header = ["name","email","bags_checked","attendance","diet","allergens","scan_count"]
+            const header = ["name","email","bags_checked","attendance","received_food","diet","allergens","scan_count"]
             const lines = [header.join(',')]
             for (const r of rows) {
                 const line = [
@@ -61,6 +61,7 @@ export async function GET(request: Request) {
                     r.email ?? '',
                     r.bags_checked ? 'true' : 'false',
                     r.attendance ? 'true' : 'false',
+                    r.received_food ? 'true' : 'false',
                     r.diet ?? '',
                     r.allergens ? escapeCsv(r.allergens) : '',
                     r.scan_count ?? 0
@@ -146,6 +147,7 @@ export async function GET(request: Request) {
                     String(r.email ?? ''),
                     r.bags_checked ? '✓' : '✗',
                     r.attendance ? '✓' : '✗',
+                    r.received_food ? '✓' : '✗',
                     String(r.diet ?? ''),
                     String(r.allergens ?? ''),
                     String(r.scan_count ?? 0),

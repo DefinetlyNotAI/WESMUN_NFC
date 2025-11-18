@@ -11,6 +11,7 @@ export interface User {
     profile: {
         bags_checked: boolean
         attendance: boolean
+        received_food: boolean
         diet: DietType
         allergens: string | null
     }
@@ -41,6 +42,7 @@ export interface UserData {
     profile: {
         bags_checked: boolean
         attendance: boolean
+        received_food: boolean
         diet: DietType
         allergens: string | null
     }

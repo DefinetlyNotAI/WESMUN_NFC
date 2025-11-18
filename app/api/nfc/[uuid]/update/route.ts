@@ -8,6 +8,7 @@ import type {DietType} from "@/lib/types/database"
 interface UpdateProfileRequest {
     bags_checked?: boolean
     attendance?: boolean
+    received_food?: boolean
     diet?: DietType
     allergens?: string
 }
@@ -63,6 +64,14 @@ export async function PATCH(request: NextRequest, {params}: { params: Promise<{ 
             }
             updates.push(`attendance = $${paramIndex++}`)
             values.push(body.attendance)
+        }
+
+        if (body.received_food !== undefined) {
+            if (!canUpdateField(user.role, "received_food")) {
+                return NextResponse.json({error: "Forbidden: Cannot update received_food"}, {status: 403})
+            }
+            updates.push(`received_food = $${paramIndex++}`)
+            values.push(body.received_food)
         }
 
         if (body.diet !== undefined) {

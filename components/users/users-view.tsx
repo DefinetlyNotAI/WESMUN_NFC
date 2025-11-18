@@ -254,6 +254,18 @@ export function UsersView() {
                                                                     <span
                                                                         className="text-muted-foreground">Attendance</span>
                                                                 </div>
+
+                                                                <div className="flex items-center gap-1.5 text-sm">
+                                                                    {user.profile.received_food ? (
+                                                                        <CheckCircle2
+                                                                            className="h-4 w-4 text-green-600"/>
+                                                                    ) : (
+                                                                        <XCircle
+                                                                            className="h-4 w-4 text-muted-foreground"/>
+                                                                    )}
+                                                                    <span
+                                                                        className="text-muted-foreground">Received Food</span>
+                                                                </div>
                                                             </>
                                                         ) : (
                                                             <Badge variant="secondary" className="text-xs">

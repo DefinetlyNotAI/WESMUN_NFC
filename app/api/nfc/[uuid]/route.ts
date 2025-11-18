@@ -23,6 +23,7 @@ export async function GET(request: NextRequest, {params}: { params: Promise<{ uu
                             'user_id', p.user_id,
                             'bags_checked', p.bags_checked,
                             'attendance', p.attendance,
+                            'received_food', p.received_food,
                             'diet', p.diet,
                             'allergens', p.allergens,
                             'created_at', p.created_at,

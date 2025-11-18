@@ -47,6 +47,7 @@ export function UserManagementSection(props: UserManagementProps) {
     const [bulkDiet, setBulkDiet] = useState<DietType | "unchanged">("unchanged")
     const [bulkBags, setBulkBags] = useState<boolean | "mixed">("mixed")
     const [bulkAttendance, setBulkAttendance] = useState<boolean | "mixed">("mixed")
+    const [bulkReceivedFood, setBulkReceivedFood] = useState<boolean | "mixed">("mixed")
     const [bulkAllergens, setBulkAllergens] = useState<string>("")
     const [bulkValidation, setBulkValidation] = useState<{
         error: string | null
@@ -84,7 +85,7 @@ export function UserManagementSection(props: UserManagementProps) {
         setBulkValidation({error: null, success: null, fieldErrors: {}})
 
         // Validate at least one field is changed
-        const hasChanges = bulkDiet !== "unchanged" || bulkBags !== "mixed" || bulkAttendance !== "mixed" || bulkAllergens.trim() !== ""
+        const hasChanges = bulkDiet !== "unchanged" || bulkBags !== "mixed" || bulkAttendance !== "mixed" || bulkReceivedFood !== "mixed" || bulkAllergens.trim() !== ""
         if (!hasChanges) {
             setBulkValidation({
                 error: "Please select at least one field to update",
@@ -111,6 +112,7 @@ export function UserManagementSection(props: UserManagementProps) {
             if (bulkDiet !== "unchanged") body.diet = bulkDiet
             if (bulkBags !== "mixed") body.bags_checked = bulkBags
             if (bulkAttendance !== "mixed") body.attendance = bulkAttendance
+            if (bulkReceivedFood !== "mixed") body.received_food = bulkReceivedFood
             if (bulkAllergens.trim() !== "") body.allergens = bulkAllergens.trim()
 
             const res = await fetch('/api/users/bulk-update', {
@@ -473,6 +475,22 @@ export function UserManagementSection(props: UserManagementProps) {
                         </Select>
                         {bulkValidation.fieldErrors.attendance && (
                             <p className="text-xs text-red-600 mt-1">{bulkValidation.fieldErrors.attendance}</p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium">Received Food</label>
+                        <Select
+                            value={bulkReceivedFood === 'mixed' ? 'mixed' : (bulkReceivedFood ? 'true' : 'false')}
+                            onValueChange={(v) => setBulkReceivedFood(v === 'mixed' ? 'mixed' : v === 'true')}>
+                            <SelectTrigger><SelectValue/></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="mixed">(Unchanged)</SelectItem>
+                                <SelectItem value="true">Yes</SelectItem>
+                                <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {bulkValidation.fieldErrors.received_food && (
+                            <p className="text-xs text-red-600 mt-1">{bulkValidation.fieldErrors.received_food}</p>
                         )}
                     </div>
                     <div>

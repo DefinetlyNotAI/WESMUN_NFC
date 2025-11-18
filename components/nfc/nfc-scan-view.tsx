@@ -66,7 +66,7 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
         }
     }
 
-    const updateProfile = async (field: "bags_checked" | "attendance", value: boolean) => {
+    const updateProfile = async (field: "bags_checked" | "attendance" | "received_food", value: boolean) => {
         if (!userData) return
 
         setUpdating(true)
@@ -186,7 +186,7 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Status Indicators */}
-                        <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <div className="flex items-center gap-3 rounded-lg border p-4">
                                 {userData.profile.bags_checked ? (
                                     <CheckCircle2 className="h-5 w-5 text-green-600"/>
@@ -211,6 +211,20 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                                     <p className="text-sm font-medium">Attendance</p>
                                     <p className="text-xs text-muted-foreground">
                                         {userData.profile.attendance ? "Marked" : "Not marked"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 rounded-lg border p-4">
+                                {userData.profile.received_food ? (
+                                    <CheckCircle2 className="h-5 w-5 text-green-600"/>
+                                ) : (
+                                    <XCircle className="h-5 w-5 text-muted-foreground"/>
+                                )}
+                                <div>
+                                    <p className="text-sm font-medium">Received Food</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {userData.profile.received_food ? "Received" : "Not received"}
                                     </p>
                                 </div>
                             </div>
@@ -282,6 +296,20 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
                                         />
                                         <Label htmlFor="attendance" className="cursor-pointer text-sm">
                                             Mark attendance
+                                        </Label>
+                                    </div>
+                                )}
+
+                                {canUpdateAttendance && (
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="received_food"
+                                            checked={userData.profile.received_food}
+                                            onCheckedChange={(checked) => updateProfile("received_food", checked as boolean)}
+                                            disabled={updating}
+                                        />
+                                        <Label htmlFor="received_food" className="cursor-pointer text-sm">
+                                            Mark food as received
                                         </Label>
                                     </div>
                                 )}

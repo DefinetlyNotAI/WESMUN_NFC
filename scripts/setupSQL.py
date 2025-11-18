@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE,
   bags_checked BOOLEAN DEFAULT FALSE,
   attendance BOOLEAN DEFAULT FALSE,
+  received_food BOOLEAN DEFAULT FALSE,
   diet diet_type DEFAULT 'veg',
   allergens TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

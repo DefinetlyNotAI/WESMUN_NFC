@@ -16,6 +16,7 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
     const [diet, setDiet] = useState<DietType>("veg")
     const [bagsChecked, setBagsChecked] = useState(false)
     const [attendance, setAttendance] = useState(false)
+    const [receivedFood, setReceivedFood] = useState(false)
     const [role, setRole] = useState<UserRole>("user")
     const [loading, setLoading] = useState(false)
     const [allergens, setAllergens] = useState<string>("")
@@ -30,6 +31,7 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
             setDiet(user.profile.diet === "veg" ? "veg" : "nonveg")
             setBagsChecked(user.profile.bags_checked ?? false)
             setAttendance(user.profile.attendance ?? false)
+            setReceivedFood(user.profile.received_food ?? false)
             setRole(user.role.name)
             setAllergens(user.profile.allergens ?? "")
             setError(null)
@@ -51,6 +53,7 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                 diet,
                 bags_checked: bagsChecked,
                 attendance,
+                received_food: receivedFood,
                 allergens // allow empty string to clear
             }
 
@@ -193,6 +196,18 @@ export function UserEditDialog({open, user, onOpenChange, onSave}: UserEditDialo
                                 className="w-4 h-4 rounded border-gray-300"
                             />
                             <span>Attendance Marked</span>
+                        </Label>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={receivedFood}
+                                onChange={(e) => setReceivedFood(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300"
+                            />
+                            <span>Received Food</span>
                         </Label>
                     </div>
 

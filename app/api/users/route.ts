@@ -27,6 +27,7 @@ export async function GET() {
                             'id', p.id,
                             'bags_checked', p.bags_checked,
                             'attendance', p.attendance,
+                            'received_food', p.received_food,
                             'diet', p.diet,
                             'allergens', p.allergens
                     ) as profile,

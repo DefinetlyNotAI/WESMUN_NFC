@@ -1,4 +1,4 @@
-import type {UserRole} from "./types/database"
+import type {UserRole} from "@/lib/types"
 
 /**
  * Permission meanings (applies across all roles):
@@ -74,10 +74,11 @@ export function hasPermission(role: UserRole, permission: keyof typeof PERMISSIO
 /**
  * Convenience utility to determine if a role can update a specific user data field.
  */
-export function canUpdateField(role: UserRole, field: "bags_checked" | "attendance" | "diet" | "allergens"): boolean {
+export function canUpdateField(role: UserRole, field: "bags_checked" | "attendance" | "received_food" | "diet" | "allergens"): boolean {
     const permissionMap = {
         bags_checked: "canUpdateBagsChecked",
         attendance: "canUpdateAttendance",
+        received_food: "canUpdateDiet", // Same permission as diet updates
         diet: "canUpdateDiet",
         allergens: "canUpdateAllergens",
     } as const

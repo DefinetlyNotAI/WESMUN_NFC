@@ -8,6 +8,7 @@ export interface UpdateUserRequest {
     allergens?: string
     bags_checked?: boolean
     attendance?: boolean
+    received_food?: boolean
 }
 
 export interface BulkUpdateBody {
@@ -16,6 +17,7 @@ export interface BulkUpdateBody {
     diet?: DietType
     bags_checked?: boolean
     attendance?: boolean
+    received_food?: boolean
     allergens?: string | null
 }
 
@@ -33,6 +35,7 @@ export interface ExportRow {
     email: string
     bags_checked: boolean
     attendance: boolean
+    received_food: boolean
     diet: DietType | null
     allergens: string | null
     scan_count: number
@@ -80,6 +83,7 @@ export interface CreateUserData {
 export interface NfcUpdateRequest {
     bags_checked?: boolean
     attendance?: boolean
+    received_food?: boolean
 }
 
 // Admin approval types

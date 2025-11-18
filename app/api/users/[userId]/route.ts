@@ -95,6 +95,11 @@ export async function PATCH(request: NextRequest, {params}: { params: Promise<{ 
             profileValues.push(body.attendance)
         }
 
+        if (body.received_food !== undefined) {
+            profileUpdates.push(`received_food = $${paramIndex++}`)
+            profileValues.push(body.received_food)
+        }
+
         if (profileUpdates.length > 0) {
             // Check if profile exists for this user
             const existingProfiles = await query<{ id: string }>("SELECT id FROM profiles WHERE user_id = $1", [userId])
@@ -103,8 +108,8 @@ export async function PATCH(request: NextRequest, {params}: { params: Promise<{ 
                 console.log("[WESMUN] No profile found for user, creating one...")
                 // Create profile if it doesn't exist (default diet is nonveg)
                 await query(
-                    "INSERT INTO profiles (user_id, diet, bags_checked, attendance, allergens) VALUES ($1, $2, $3, $4, $5)",
-                    [userId, body.diet || 'nonveg', body.bags_checked || false, body.attendance || false, body.allergens || null]
+                    "INSERT INTO profiles (user_id, diet, bags_checked, attendance, received_food, allergens) VALUES ($1, $2, $3, $4, $5, $6)",
+                    [userId, body.diet || 'nonveg', body.bags_checked || false, body.attendance || false, body.received_food || false, body.allergens || null]
                 )
             } else {
                 profileValues.push(userId)

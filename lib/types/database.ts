@@ -26,6 +26,7 @@ export interface Profile {
     user_id: string
     bags_checked: boolean
     attendance: boolean
+    received_food: boolean
     diet: DietType
     allergens: string | null
     created_at: Date

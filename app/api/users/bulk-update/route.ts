@@ -49,7 +49,7 @@ export async function PATCH(request: Request) {
             for (const u of users) {
                 const prof = await query<{ id: string }>("SELECT id FROM profiles WHERE user_id = $1", [u.id])
                 if (prof.length === 0) {
-                    await query("INSERT INTO profiles (user_id, diet, bags_checked, attendance, allergens) VALUES ($1,$2,$3,$4,$5)", [u.id, body.diet || 'nonveg', body.bags_checked || false, body.attendance || false, body.allergens || null])
+                    await query("INSERT INTO profiles (user_id, diet, bags_checked, attendance, received_food, allergens) VALUES ($1,$2,$3,$4,$5,$6)", [u.id, body.diet || 'nonveg', body.bags_checked || false, body.attendance || false, body.received_food || false, body.allergens || null])
                 }
             }
             // Build update statement
@@ -74,6 +74,7 @@ export async function PATCH(request: Request) {
                     diet: body.diet ?? null,
                     bags_checked: body.bags_checked ?? null,
                     attendance: body.attendance ?? null,
+                    received_food: body.received_food ?? null,
                     allergens: body.allergens ?? null
                 }
             },
