@@ -124,7 +124,7 @@ interface User {
 - `role_id` - Foreign key to roles table
 - `created_at` - Account creation timestamp
 - `updated_at` - Last update timestamp
-- `password_hash` - Bcrypt hashed password (nullable for data-only users)
+- `password_hash` - Hashed password (nullable for data-only users)
 - `approval_status` - Approval state
 - `role_name` - Denormalized role name (from join)
 
@@ -719,8 +719,7 @@ interface BulkCreateResponse {
 
 - Minimum length: 8 characters
 - No maximum (reasonable limit)
-- Stored as bcrypt hash (never plaintext)
-- Cost factor: 10 (default bcrypt)
+- Stored as hash (never plaintext)
 
 ### Name
 
@@ -755,6 +754,10 @@ interface BulkCreateResponse {
 Useful TypeScript type guards for runtime validation:
 
 ```typescript
+// Type reminder
+type UserRole = "user" | "security" | "overseer" | "admin"
+type DietType = "veg" | "nonveg"
+
 // Check if string is valid UserRole
 function isUserRole(value: string): value is UserRole {
     return ["user", "security", "overseer", "admin"].includes(value);

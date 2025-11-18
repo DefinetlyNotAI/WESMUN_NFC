@@ -8,6 +8,8 @@ This document describes the role-based access control (RBAC) system and permissi
 
 The system has four distinct user roles, each with specific permissions and capabilities.
 
+> NOTE: All permissions are based on the defaults, you can change anything in `permissions.ts` file
+
 ### 1. User (Delegate)
 
 **Role Name:** `user`  
@@ -15,7 +17,7 @@ The system has four distinct user roles, each with specific permissions and capa
 
 **Permissions:**
 
-- ✅ Can view own profile
+- ❌ Cannot view own profile
 - ❌ Cannot update own profile
 - ❌ Cannot view other users
 - ❌ Cannot update any fields
@@ -23,17 +25,18 @@ The system has four distinct user roles, each with specific permissions and capa
 - ❌ Cannot view audit logs
 - ❌ Cannot approve users
 
+> Purely data-only
+
 **Use Cases:**
 
-- Conference delegates/attendees
+- Conference delegates/attendees data tracking
 - Default role for registered users
-- Minimal system access
+- Zero system access
 - Primarily data subjects, not system users
 
 **Notes:**
 
 - Most restrictive role
-- Can only view their own data
 - Cannot make any modifications
 - Profile updates must be done by admins
 
@@ -46,11 +49,10 @@ The system has four distinct user roles, each with specific permissions and capa
 
 **Permissions:**
 
-- ✅ Can view own profile
-- ❌ Cannot update own profile
 - ✅ Can view all users
 - ✅ Can update bags_checked field
 - ✅ Can update attendance field
+- ✅ Can update food received field
 - ❌ Cannot update diet
 - ❌ Cannot update allergens
 - ❌ Cannot manage users (delete/modify roles)
@@ -87,13 +89,11 @@ The system has four distinct user roles, each with specific permissions and capa
 
 **Permissions:**
 
-- ✅ Can view own profile
-- ❌ Cannot update own profile
 - ✅ Can view all users
-- ❌ Cannot update bags_checked
-- ❌ Cannot update attendance
-- ❌ Cannot update diet
-- ❌ Cannot update allergens
+- ✅ Can READ-ONLY bags_checked status
+- ✅ Can READ-ONLY attendance status
+- ✅ Can READ-ONLY diet status
+- ✅ Can READ-ONLY allergens status
 - ❌ Cannot manage users
 - ❌ Cannot view audit logs
 - ❌ Cannot approve users
@@ -109,14 +109,12 @@ The system has four distinct user roles, each with specific permissions and capa
 
 1. View user lists and statistics
 2. Monitor attendance and check-in rates
-3. Generate reports (via export)
-4. No modification capabilities
+3. No modification capabilities
 
 **Notes:**
 
 - Pure read-only role
 - Cannot make any modifications
-- Can export data for reporting
 - Useful for delegation without risk
 
 ---
@@ -136,7 +134,7 @@ The system has four distinct user roles, each with specific permissions and capa
 - ✅ Can update diet field
 - ✅ Can update allergens field
 - ✅ Can manage users (create, update, delete)
-- ❌ Cannot view audit logs (by default)
+- ❌ Cannot view audit logs
 - ✅ Can approve users
 
 **Use Cases:**
@@ -164,7 +162,7 @@ The system has four distinct user roles, each with specific permissions and capa
 
 ---
 
-## Emergency Admin
+### 5. Emergency Admin
 
 **Special Role:** Not a database role, but a permission level
 
@@ -196,32 +194,14 @@ The system has four distinct user roles, each with specific permissions and capa
 
 ---
 
-## Permission Matrix
-
-| Permission              | User | Security | Overseer | Admin |
-|-------------------------|------|----------|----------|-------|
-| **View Own Profile**    | ✅    | ✅        | ✅        | ✅     |
-| **Update Own Profile**  | ❌    | ❌        | ❌        | ✅     |
-| **View All Users**      | ❌    | ✅        | ✅        | ✅     |
-| **Update Bags Checked** | ❌    | ✅        | ❌        | ✅     |
-| **Update Attendance**   | ❌    | ✅        | ❌        | ✅     |
-| **Update Diet**         | ❌    | ❌        | ❌        | ✅     |
-| **Update Allergens**    | ❌    | ❌        | ❌        | ✅     |
-| **Manage Users**        | ❌    | ❌        | ❌        | ✅     |
-| **View Audit Logs**     | ❌    | ❌        | ❌        | ❌*    |
-| **Approve Users**       | ❌    | ❌        | ❌        | ✅     |
-
-\* Only Emergency Admin can view audit logs
-
----
-
 ## Field-Level Permissions
 
 Different roles have different permissions for updating specific profile fields.
 
+This is all set in the `permissions.ts` file and controls role-permissions.
+
 ### bags_checked
 
-**Can Update:** Security, Admin  
 **Permission:** `canUpdateBagsChecked`
 
 **Use Case:** Mark when bags have been checked at security checkpoint
@@ -235,7 +215,6 @@ Different roles have different permissions for updating specific profile fields.
 
 ### attendance
 
-**Can Update:** Security, Admin  
 **Permission:** `canUpdateAttendance`
 
 **Use Case:** Mark when user has checked in to the event
@@ -249,7 +228,6 @@ Different roles have different permissions for updating specific profile fields.
 
 ### received_food
 
-**Can Update:** Admin only  
 **Permission:** `canUpdateDiet` (shared with diet)
 
 **Use Case:** Track food distribution
@@ -265,7 +243,6 @@ Different roles have different permissions for updating specific profile fields.
 
 ### diet
 
-**Can Update:** Admin only  
 **Permission:** `canUpdateDiet`
 
 **Use Case:** Manage dietary preferences for food planning
@@ -281,7 +258,6 @@ Different roles have different permissions for updating specific profile fields.
 
 ### allergens
 
-**Can Update:** Admin only  
 **Permission:** `canUpdateAllergens`
 
 **Use Case:** Track allergen information for safety
@@ -297,7 +273,7 @@ Different roles have different permissions for updating specific profile fields.
 
 ---
 
-## Permission Checking
+## Permission Helper Functions
 
 ### hasPermission Function
 
@@ -305,7 +281,7 @@ Different roles have different permissions for updating specific profile fields.
 function hasPermission(
     role: UserRole,
     permission: keyof typeof PERMISSIONS.admin
-): boolean
+): boolean {}
 ```
 
 **Usage:**
@@ -318,16 +294,16 @@ if (hasPermission(user.role, "canManageUsers")) {
 
 **Available Permissions:**
 
-- `canViewOwnProfile`
-- `canUpdateOwnProfile`
-- `canViewAllUsers`
-- `canUpdateBagsChecked`
-- `canUpdateAttendance`
-- `canUpdateDiet`
-- `canUpdateAllergens`
-- `canManageUsers`
-- `canViewAuditLogs`
-- `canApproveUsers`
+* `canViewOwnProfile`: User can view their own profile details (e.g., on /users/me) and related API reads.
+* `canUpdateOwnProfile`: User can update their own profile fields (non-admin self-service edits only).
+* `canViewAllUsers`: Can view the full users list and read other users' profiles (e.g., Users page, GET /api/users).
+* `canUpdateBagsChecked`: Can update the "bags_checked" field for users (bag check/scan operations in Security flow).
+* `canUpdateAttendance`: Can update attendance status for users (check-in/out scanning or manual updates).
+* `canUpdateDiet`: Can modify user diet information (e.g., dietary preferences [Vegan status, Food received?] or needs data field).
+* `canUpdateAllergens`: Can modify user allergen information (medical/safety data field).
+* `canManageUsers`: Full user management actions (create, update, delete, bulk ops, role changes where allowed).
+* `canViewAuditLogs`: Can read audit logs (Audit Logs page and /api/audit endpoints).
+* `canApproveUsers`: Can approve or reject pending users (Admin approval queue and related endpoints).
 
 ---
 
@@ -337,7 +313,7 @@ if (hasPermission(user.role, "canManageUsers")) {
 function canUpdateField(
     role: UserRole,
     field: "bags_checked" | "attendance" | "received_food" | "diet" | "allergens"
-): boolean
+): boolean {}
 ```
 
 **Usage:**
@@ -362,29 +338,29 @@ if (canUpdateField(user.role, "bags_checked")) {
 
 ### Authentication Endpoints
 
-| Endpoint                | Required Auth  | Required Permission |
-|-------------------------|----------------|---------------------|
-| POST /api/auth/login    | ❌              | None                |
-| POST /api/auth/register | ❌              | None                |
-| POST /api/auth/logout   | ⚠️ Recommended | None                |
-| GET /api/auth/validate  | ✅              | None                |
-| POST /api/auth/validate | ❌              | None                |
+| Endpoint                | Required Auth     | Required Permission |
+|-------------------------|-------------------|---------------------|
+| POST /api/auth/login    | ❌                 | None                |
+| POST /api/auth/register | ❌                 | None                |
+| POST /api/auth/logout   | ⚠️ Uses to delete | None                |
+| GET  /api/auth/validate | ✅                 | None                |
+| POST /api/auth/validate | ❌                 | None                |
 
 ---
 
 ### User Management Endpoints
 
-| Endpoint                              | Required Auth | Required Permission    |
-|---------------------------------------|---------------|------------------------|
-| GET /api/users                        | ✅             | canViewAllUsers        |
-| PATCH /api/users/[userId]             | ✅             | canManageUsers         |
-| DELETE /api/users/[userId]            | ✅             | canManageUsers         |
-| PATCH /api/users/bulk-update          | ✅             | canManageUsers         |
-| POST /api/users/bulk-delete           | ✅             | canManageUsers         |
-| POST /api/users/create-data-only      | ✅             | Security or Admin role |
-| POST /api/users/create-data-only/bulk | ✅             | Security or Admin role |
-| GET /api/users/export                 | ✅             | canViewAllUsers        |
-| POST /api/users/export                | ✅             | canViewAllUsers        |
+| Endpoint                              | Required Auth | Required Permission |
+|---------------------------------------|---------------|---------------------|
+| GET /api/users                        | ✅             | canViewAllUsers     |
+| PATCH /api/users/[userId]             | ✅             | canManageUsers      |
+| DELETE /api/users/[userId]            | ✅             | canManageUsers      |
+| PATCH /api/users/bulk-update          | ✅             | canManageUsers      |
+| POST /api/users/bulk-delete           | ✅             | canManageUsers      |
+| GET /api/users/export                 | ✅             | canViewAllUsers     |
+| POST /api/users/export                | ✅             | canViewAllUsers     |
+| POST /api/users/create-data-only      | ✅             | Admin only          |
+| POST /api/users/create-data-only/bulk | ✅             | Admin only          |
 
 ---
 
@@ -399,11 +375,11 @@ if (canUpdateField(user.role, "bags_checked")) {
 
 ### NFC Endpoints
 
-| Endpoint                     | Required Auth | Required Permission                |
-|------------------------------|---------------|------------------------------------|
-| GET /api/nfc/[uuid]          | ✅             | None (but returns 204 if not auth) |
-| PATCH /api/nfc/[uuid]/update | ✅             | Field-specific (see below)         |
-| POST /api/nfc-links          | ✅             | canManageUsers                     |
+| Endpoint                     | Required Auth | Required Permission           |
+|------------------------------|---------------|-------------------------------|
+| GET /api/nfc/[uuid]          | ✅             | Any (Returns 204 if not auth) |
+| PATCH /api/nfc/[uuid]/update | ✅             | Field-specific (see below)    |
+| POST /api/nfc-links          | ✅             | canManageUsers                |
 
 **Field-specific permissions for PATCH /api/nfc/[uuid]/update:**
 
@@ -440,7 +416,6 @@ if (canUpdateField(user.role, "bags_checked")) {
 1. Only admins can change roles
 2. Only users with @wesmun.com email can have non-user roles
 3. Cannot change own role (must be done by another admin)
-4. Cannot demote the last admin (recommended safeguard)
 
 **API Validation:**
 
@@ -457,7 +432,7 @@ if (!isWesmunEmail && newRole !== "user") {
 
 ## Security Considerations
 
-### Principle of Least Privilege
+### Principle of 'Least Privilege'
 
 - Users get minimum permissions needed for their role
 - No role has unnecessary access
@@ -603,21 +578,4 @@ WHERE r.name = 'admin';
 ```
 
 ---
-
-## Future Enhancements
-
-### Potential Additions
-
-1. **Custom Roles:** Allow creating custom roles with specific permissions
-2. **Permission Groups:** Group permissions into categories
-3. **Temporary Escalation:** Time-limited permission grants
-4. **Role Hierarchy:** Implicit permission inheritance
-5. **Resource-Level Permissions:** Per-user or per-resource access control
-
-### Considerations
-
-- Balance flexibility with complexity
-- Maintain backward compatibility
-- Keep permission checks performant
-- Document all changes thoroughly
 
