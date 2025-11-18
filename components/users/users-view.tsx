@@ -28,6 +28,7 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
+import {cookies} from "next/headers";
 
 export function UsersView() {
     const [users, setUsers] = useState<User[]>([])
@@ -82,11 +83,28 @@ export function UsersView() {
 
     const getCurrentUserRole = async () => {
         try {
-            const response = await fetch("/api/auth/validate")
-            if (response.ok) {
-                const data = await response.json()
-                setCurrentUserRole(data.user?.role)
+            const cookieStore = await cookies();
+            const token = cookieStore.get("session_token")?.value;
+            if (!token) {
+                console.warn("No token found")
+                return
             }
+
+            const response = await fetch("/api/auth/validate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ token })
+            })
+
+            if (!response.ok) {
+                console.warn("Validation failed", response.status)
+                return
+            }
+
+            const data = await response.json()
+            setCurrentUserRole(data.user?.role)
         } catch (error) {
             console.error("Error fetching user role:", error)
         }
