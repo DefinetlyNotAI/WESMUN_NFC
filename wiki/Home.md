@@ -24,7 +24,7 @@ includes:
 
 ### Authentication (4 endpoints)
 
-> In depth wiki page can be found [here](api/authentication.md)
+> In depth wiki page can be found [here](api/%5BAPI's%5D%20Authentication.md)
 
 - `POST /api/auth/login` - Authenticate user
 - `POST /api/auth/register` - Register new user
@@ -33,7 +33,7 @@ includes:
 
 ### Users (9 endpoints)
 
-> In depth wiki page can be found [here](api/user_management.md)
+> In depth wiki page can be found [here](api/%5BAPI's%5D%20Users.md)
 
 - `GET /api/users` - List all users
 - `PATCH /api/users/[userId]` - Update user
@@ -47,14 +47,14 @@ includes:
 
 ### Admin (2 endpoints)
 
-> In depth wiki page can be found [here](api/admin.md)
+> In depth wiki page can be found [here](api/%5BAPI's%5D%20Admin.md)
 
 - `GET /api/admin/pending-users` - List pending approvals
 - `POST /api/admin/approve-user` - Approve/reject user
 
 ### NFC (3 endpoints)
 
-> In depth wiki page can be found [here](api/nfc.md)
+> In depth wiki page can be found [here](api/%5BAPI's%5D%20NFC.md)
 
 - `GET /api/nfc/[uuid]` - Scan NFC link
 - `PATCH /api/nfc/[uuid]/update` - Update via NFC
@@ -62,7 +62,7 @@ includes:
 
 ### Audit (3 endpoints)
 
-> In depth wiki page can be found [here](api/audit.md)
+> In depth wiki page can be found [here](api/%5BAPI's%5D%20Audit.md)
 
 - `GET /api/audit` - List audit logs
 - `DELETE /api/audit/[id]` - Delete log entry
@@ -248,26 +248,26 @@ python scripts/setupSQL.py
 ## Documentation Navigation
 
 **I want to authenticate users:**
-→ [Authentication API](api/authentication.md)
+→ [Authentication API](api/%5BAPI's%5D%20Authentication.md)
 
 **I want to manage users:**
-→ [User Management API](api/user_management.md)
-→ [Admin API](api/admin.md)
+→ [User Management API](api/%5BAPI's%5D%20Users.md)
+→ [Admin API](api/%5BAPI's%5D%20Admin.md)
 
 **I want to scan NFC tags:**
-→ [NFC API](api/nfc.md)
+→ [NFC API](api/%5BAPI's%5D%20NFC.md)
 
 **I want to track actions:**
-→ [Audit API](api/audit.md)
+→ [Audit API](api/%5BAPI's%5D%20Audit.md)
 
 **I want to understand permissions:**
-→ [Permissions & Roles](development/permissions_and_roles.md)
+→ [Permissions & Roles](development/%5BDevelopment%5D%20Permissions%20&%20Roles.md)
 
 **I want to handle errors:**
-→ [Error Handling](development/error_handling.md)
+→ [Error Handling](development/%5BDevelopment%5D%20Error%20Handling.md)
 
 **I want TypeScript types:**
-→ [Data Types](development/dataTypes.md)
+→ [Data Types](development/%5BDevelopment%5D%20Data%20Types.md)
 
 ---
 
