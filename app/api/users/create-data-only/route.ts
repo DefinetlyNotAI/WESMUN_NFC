@@ -11,8 +11,8 @@ export async function POST(request: Request) {
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
 
-        // Only security and admin can create data-only users
-        if (user.role !== "security" && user.role !== "admin") {
+        // Only admin can create data-only users
+        if (user.role !== "admin") {
             return NextResponse.json({error: "Forbidden"}, {status: 403})
         }
 

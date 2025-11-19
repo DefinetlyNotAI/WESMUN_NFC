@@ -73,7 +73,7 @@ Content-Type: application/json
 ### Implementation Details
 
 - Session token is generated using secure random bytes
-- Password verification uses bcrypt hashing
+- Password verification uses hashing
 - User approval status must be "approved" to login
 - Automatically creates audit log entry for login attempts
 
@@ -135,7 +135,7 @@ Content-Type: application/json
 ### Notes
 
 - New users are created with `approval_status: "pending"`
-- Password is hashed using bcrypt before storage
+- Password is hashed before storage
 - User cannot login until approved by an admin
 - Default role is "user"
 - Email must be unique across all users

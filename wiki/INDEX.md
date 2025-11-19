@@ -1,35 +1,30 @@
 # API Documentation Index
 
-Complete documentation for all NFC WESMUN APIs.
+Welcome to the NFC WESMUN API documentation. This wiki provides comprehensive documentation for all available APIs in
+the NFC WESMUN system.
 
 ---
 
-## 📚 Documentation Files
+## Overview
 
-### Getting Started
+The NFC WESMUN system is a Next.js application that provides NFC-based user management for the WESMUN conference. It
+includes:
 
-- **[README](./README.md)** - Main documentation overview and introduction
+- User authentication and authorization
+- Role-based access control (RBAC)
+- NFC link generation and scanning
+- User profile management
+- Audit logging
+- Bulk operations support
+- CSV/PDF export functionality
 
-### Core APIs
+## API Endpoints Summary
 
-1. **[Authentication API](./authentication-api.md)** - Login, register, logout, session validation
-2. **[User Management API](./user-management-api.md)** - CRUD operations, bulk actions, exports
-3. **[Admin API](./admin-api.md)** - User approval and admin operations
-4. **[NFC API](./nfc-api.md)** - NFC scanning and profile updates
-5. **[Audit API](./audit-api.md)** - Audit log viewing and management
-
-### Reference
-
-- **[Data Types](./data-types.md)** - All TypeScript interfaces and database schemas
-- **[Permissions & Roles](./permissions-roles.md)** - RBAC system and access control
-- **[Error Handling](./error-handling.md)** - Error codes, patterns, and recovery
-- **[Quick Reference](./quick-reference.md)** - Quick lookup for common operations
-
----
-
-## 🔑 API Endpoints Summary
+**Total: 21 API endpoints**
 
 ### Authentication (4 endpoints)
+
+> In depth wiki page can be found [here](api/authentication.md)
 
 - `POST /api/auth/login` - Authenticate user
 - `POST /api/auth/register` - Register new user
@@ -37,6 +32,8 @@ Complete documentation for all NFC WESMUN APIs.
 - `GET /api/auth/validate` - Check session validity
 
 ### Users (9 endpoints)
+
+> In depth wiki page can be found [here](api/user_management.md)
 
 - `GET /api/users` - List all users
 - `PATCH /api/users/[userId]` - Update user
@@ -50,10 +47,14 @@ Complete documentation for all NFC WESMUN APIs.
 
 ### Admin (2 endpoints)
 
+> In depth wiki page can be found [here](api/admin.md)
+
 - `GET /api/admin/pending-users` - List pending approvals
 - `POST /api/admin/approve-user` - Approve/reject user
 
 ### NFC (3 endpoints)
+
+> In depth wiki page can be found [here](api/nfc.md)
 
 - `GET /api/nfc/[uuid]` - Scan NFC link
 - `PATCH /api/nfc/[uuid]/update` - Update via NFC
@@ -61,41 +62,41 @@ Complete documentation for all NFC WESMUN APIs.
 
 ### Audit (3 endpoints)
 
+> In depth wiki page can be found [here](api/audit.md)
+
 - `GET /api/audit` - List audit logs
 - `DELETE /api/audit/[id]` - Delete log entry
 - `DELETE /api/audit/bulk-delete` - Bulk delete logs
 
-**Total: 21 API endpoints**
-
 ---
 
-## 👥 User Roles
+## User Roles
 
 | Role                | Description          | Key Permissions                   |
 |---------------------|----------------------|-----------------------------------|
-| **user**            | Conference delegate  | View own profile only             |
+| **user**            | Conference delegate  | Data Only User                    |
 | **security**        | Security personnel   | Scan, check bags, mark attendance |
-| **overseer**        | Observer             | Read-only access to all users     |
+| **overseer**        | Observer             | Read-only access                  |
 | **admin**           | System administrator | Full user management              |
 | **Emergency Admin** | Super admin          | Audit log access                  |
 
 ---
 
-## 🔐 Common Permissions
+## Common Permissions
 
 | Permission            | Security | Overseer | Admin           |
 |-----------------------|----------|----------|-----------------|
 | View all users        | ✅        | ✅        | ✅               |
 | Update bags_checked   | ✅        | ❌        | ✅               |
 | Update attendance     | ✅        | ❌        | ✅               |
-| Update diet/allergens | ❌        | ❌        | ✅               |
+| Update diet/allergens | ✅        | ❌        | ✅               |
 | Create/delete users   | ❌        | ❌        | ✅               |
 | Approve users         | ❌        | ❌        | ✅               |
 | View audit logs       | ❌        | ❌        | Emergency Admin |
 
 ---
 
-## 📊 Data Models
+## Data Models
 
 ### Core Tables
 
@@ -119,7 +120,7 @@ users (1) ← (N) sessions
 
 ---
 
-## 🚀 Quick Start Examples
+## Quick Start Examples
 
 ### Login and Get Users
 
@@ -190,7 +191,7 @@ const blob = await exportRes.blob();
 
 ---
 
-## ⚠️ Common Error Codes
+### Common Error Codes
 
 | Code | Meaning      | Common Causes                        |
 |------|--------------|--------------------------------------|
@@ -202,7 +203,7 @@ const blob = await exportRes.blob();
 
 ---
 
-## 🔍 Search & Filter
+## Search & Filter
 
 ### User Export Filters
 
@@ -225,157 +226,77 @@ const blob = await exportRes.blob();
 
 ---
 
-## 🛠️ Development Tools
+## Development Tools
 
 ### Environment Variables
 
 ```env
 DATABASE_URL=postgresql://...
 SESSION_SECRET=random-secret-key
-NEXT_PUBLIC_BASE_URL=https://nfc.wesmun.com
+EMERGENCY_ADMIN_PASSWORD=password-for-super-admin
 EMERGENCY_ADMIN_USERNAME=admin@wesmun.com
-NODE_ENV=production
 ```
 
 ### Database Setup
 
 ```bash
-# Connect to database
-psql $DATABASE_URL
-
-# Run schema setup
-psql $DATABASE_URL < schema.sql
-
-# Create initial admin
-psql $DATABASE_URL -c "UPDATE users SET role_id = (SELECT id FROM roles WHERE name = 'admin') WHERE email = 'admin@wesmun.com';"
+python scripts/setupSQL.py
 ```
 
 ---
 
-## 📖 Documentation Navigation
-
-### By Use Case
+## Documentation Navigation
 
 **I want to authenticate users:**
-→ [Authentication API](./authentication-api.md)
+→ [Authentication API](api/authentication.md)
 
 **I want to manage users:**
-→ [User Management API](./user-management-api.md)
-→ [Admin API](./admin-api.md)
+→ [User Management API](api/user_management.md)
+→ [Admin API](api/admin.md)
 
 **I want to scan NFC tags:**
-→ [NFC API](./nfc-api.md)
+→ [NFC API](api/nfc.md)
 
 **I want to track actions:**
-→ [Audit API](./audit-api.md)
+→ [Audit API](api/audit.md)
 
 **I want to understand permissions:**
-→ [Permissions & Roles](./permissions-roles.md)
+→ [Permissions & Roles](development/permissions_and_roles.md)
 
 **I want to handle errors:**
-→ [Error Handling](./error-handling.md)
+→ [Error Handling](development/error_handling.md)
 
 **I want TypeScript types:**
-→ [Data Types](./data-types.md)
-
-**I want quick answers:**
-→ [Quick Reference](./quick-reference.md)
+→ [Data Types](development/dataTypes.md)
 
 ---
 
-## 📝 Documentation Standards
+## Extra Information
 
-### Request Examples
+### Base URL
 
-All endpoints include:
+```
+Production: https://nfc.wesmun.com
+Development: http://localhost:3000
+```
 
-- HTTP method and path
-- Required headers
-- Request body schema
-- URL parameters
-- Query parameters
+### Authentication
 
-### Response Examples
+All API endpoints (except login and register) require authentication via HTTP-only session cookies. The session token is
+set automatically after successful login.
 
-All endpoints include:
+### HTTP Status Codes
 
-- Success response (200/201/204)
-- Error responses (400/401/403/404/500)
-- Response body schema
-- Headers (if relevant)
+- `200 OK` - Request succeeded
+- `201 Created` - Resource created successfully
+- `204 No Content` - Success with no response body
+- `400 Bad Request` - Invalid request parameters
+- `401 Unauthorized` - Authentication required
+- `403 Forbidden` - Insufficient permissions
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Server error
 
-### Code Examples
-
-Documentation includes:
-
-- JavaScript/TypeScript examples
-- cURL examples
-- Common patterns
-- Error handling
-
----
-
-## 🔄 API Versioning
-
-Current version: **v1** (implicit)
-
-All endpoints are under `/api/` with no version prefix.
-
-Future versions will use: `/api/v2/`, `/api/v3/`, etc.
-
-**Backward Compatibility:**
-
-- v1 (current) will remain available indefinitely
-- Breaking changes will introduce new version
-- Deprecation notices given 6 months in advance
-
----
-
-## 🧪 Testing
-
-### API Testing Tools
-
-- **Postman** - Import collection from docs
-- **cURL** - Command-line testing
-- **HTTPie** - User-friendly CLI
-- **Jest** - Unit/integration tests
-- **Playwright** - E2E tests
-
-### Test Accounts
-
-Development environment includes:
-
-- `admin@wesmun.com` - Admin user
-- `security@wesmun.com` - Security user
-- `user@example.com` - Regular user
-
----
-
-## 📊 Statistics
-
-**Documentation Stats:**
-
-- Total pages: 10
-- Total endpoints: 21
-- Total roles: 4 (+1 emergency)
-- Total permissions: 10
-- Code examples: 50+
-- Database tables: 6
-
-**Coverage:**
-
-- Authentication: ✅ Complete
-- User Management: ✅ Complete
-- Admin Operations: ✅ Complete
-- NFC Operations: ✅ Complete
-- Audit Logging: ✅ Complete
-- Error Handling: ✅ Complete
-- Data Types: ✅ Complete
-- Permissions: ✅ Complete
-
----
-
-## 🤝 Contributing
+## Contributing
 
 To update this documentation:
 
@@ -385,57 +306,4 @@ To update this documentation:
 4. **Test all examples** before committing
 5. **Update this index** if adding new files
 
-### Documentation Style Guide
-
-- Use headers for clear structure
-- Include practical examples
-- Explain the "why" not just the "how"
-- Link to related documentation
-- Keep code examples simple and clear
-
 ---
-
-## 📞 Support
-
-**Issues with APIs:**
-
-1. Check [Error Handling](./error-handling.md)
-2. Review [Quick Reference](./quick-reference.md)
-3. Verify [Permissions](./permissions-roles.md)
-4. Check server logs
-
-**Documentation Questions:**
-
-- Open an issue in the repository
-- Tag with `documentation` label
-- Provide specific page reference
-
----
-
-## 🗺️ Roadmap
-
-### Planned Enhancements
-
-- [ ] WebSocket support for real-time updates
-- [ ] GraphQL API alternative
-- [ ] Rate limiting documentation
-- [ ] API client libraries (JS/Python)
-- [ ] OpenAPI/Swagger specification
-- [ ] Webhook support
-- [ ] Batch operation optimizations
-
-### Documentation Improvements
-
-- [ ] Interactive API playground
-- [ ] Video tutorials
-- [ ] Migration guides
-- [ ] Performance best practices
-- [ ] Security best practices
-- [ ] Deployment guides
-
----
-
-**Last Updated:** November 18, 2025  
-**Version:** 1.0.0  
-**Maintainer:** NFC WESMUN Team
-

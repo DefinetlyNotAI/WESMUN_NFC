@@ -7,7 +7,7 @@ import type {UserRole} from "@/types"
  * - canViewAllUsers: Can view the full users list and read other users' profiles (e.g., Users page, GET /api/users).
  * - canUpdateBagsChecked: Can update the "bags_checked" field for users (bag check/scan operations in Security flow).
  * - canUpdateAttendance: Can update attendance status for users (check-in/out scanning or manual updates).
- * - canUpdateDiet: Can modify user diet information (e.g., dietary preferences or needs data field).
+ * - canUpdateDiet: Can modify user diet information (e.g., dietary preferences [Vegan status, Food received?] or needs data field).
  * - canUpdateAllergens: Can modify user allergen information (medical/safety data field).
  * - canManageUsers: Full user management actions (create, update, delete, bulk ops, role changes where allowed).
  * - canViewAuditLogs: Can read audit logs (Audit Logs page and /api/audit endpoints).
@@ -32,7 +32,7 @@ export const PERMISSIONS = {
         canViewAllUsers: true,
         canUpdateBagsChecked: true,
         canUpdateAttendance: true,
-        canUpdateDiet: false,
+        canUpdateDiet: true,
         canUpdateAllergens: false,
         canManageUsers: false,
         canViewAuditLogs: false,

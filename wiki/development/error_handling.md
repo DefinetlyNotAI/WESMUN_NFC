@@ -44,7 +44,7 @@ This document describes error handling patterns, status codes, and best practice
   "success": true,
   "message": "User created successfully",
   "user": {
-    ...
+    "...": "..."
   }
 }
 ```

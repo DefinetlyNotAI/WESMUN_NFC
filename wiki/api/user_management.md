@@ -591,9 +591,7 @@ Content-Type: application/json
       "email": "delegate1@example.com",
       "success": true,
       "message": "Data-only user created successfully",
-      "user": {
-        ...
-      }
+      "user": {}
     },
     {
       "email": "existing@example.com",
