@@ -306,8 +306,8 @@ export function UserManagementSection(props: UserManagementProps) {
                                                                 />
                                                                 <StatusIcon
                                                                     active={user.profile.received_food}
-                                                                    activeLabel="Attendance"
-                                                                    inactiveLabel="No Attendance"
+                                                                    activeLabel="Has recieved foor"
+                                                                    inactiveLabel="Haven't yet recieved food"
                                                                 />
                                                             </div>
 
