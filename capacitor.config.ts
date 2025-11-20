@@ -7,6 +7,14 @@ const config: CapacitorConfig = {
     server: {
         url: 'https://nfc.wesmun.com',
         cleartext: true
+    },
+    plugins: {
+        SplashScreen: {
+            launchShowDuration: 3000,
+            launchAutoHide: true,
+            backgroundColor: '#000000',
+            androidSplashResourceName: 'splash'
+        }
     }
 };
 
