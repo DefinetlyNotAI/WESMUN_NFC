@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.wesmun.nfc",
+      "sha256_cert_fingerprints": ["21:27:60:57:2B:28:48:C0:D4:80:65:ED:2B:78:25:E1:FE:22:53:6C:DE:CC:BF:F1:BE:E2:64:61:E4:58:4B:BF"]
+    }
+  }
+]

@@ -7,7 +7,6 @@ const nextConfig = {
         unoptimized: true
     },
 
-    // TODO Test if these break anything
     async headers() {
         return [
             {
