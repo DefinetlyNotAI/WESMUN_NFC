@@ -8,6 +8,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-316192?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=flat-square&logo=vercel)](https://vercel.com/)
+[![Android APK](https://img.shields.io/badge/Download-APK-3DDC84?style=flat-square&logo=android&logoColor=white)](https://nfc.wesmun.com/wesmun.apk)
 
 **A comprehensive, production-ready NFC-based user management system for Model United Nations conferences and
 large-scale events.**
