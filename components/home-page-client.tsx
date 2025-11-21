@@ -12,6 +12,19 @@ import type {HomePageClientProps} from "@/types/ui"
 
 export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
     const [effectiveRole, setEffectiveRole] = useState<UserRole>(user.role)
+    const [showAndroidDownload, setShowAndroidDownload] = useState(false);
+
+    useEffect(() => {
+        const ua = navigator.userAgent.toLowerCase();
+        const isAndroid = ua.includes("android");
+
+        // Assume window.IS_ANDROID_APK is set to true in your Android WebView
+        const isInAndroidApp = (window as any).IS_ANDROID_APK === true;
+
+        if (isAndroid && !isInAndroidApp) {
+            setShowAndroidDownload(true);
+        }
+    }, []);
 
     useEffect(() => {
         // Update effective role on mount and when storage changes
@@ -76,6 +89,14 @@ export function HomePageClient({user, isEmergencyAdmin}: HomePageClientProps) {
                                     Audit Logs
                                 </Button>
                             </Link>
+                        )}
+
+                        {showAndroidDownload && (
+                            <a href="/wesmun.apk" target="_blank" rel="noopener noreferrer">
+                                <Button className="w-full bg-transparent" variant="outline" size="lg">
+                                    Download the Android app
+                                </Button>
+                            </a>
                         )}
 
                         <LogoutButton/>
