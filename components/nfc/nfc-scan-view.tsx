@@ -1,16 +1,17 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Badge} from "@/components/ui/badge"
 import {Checkbox} from "@/components/ui/checkbox"
 import {Label} from "@/components/ui/label"
 import {Alert, AlertDescription} from "@/components/ui/alert"
-import {AlertTriangle, CheckCircle2, Copy, Loader2, User, Utensils, XCircle} from 'lucide-react'
+import {AlertTriangle, ArrowLeft, CheckCircle2, Copy, Loader2, User, Utensils, XCircle} from 'lucide-react'
 import {Button} from "@/components/ui/button"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import type {DietType} from "@/types/database"
 import type {NfcScanViewProps, UserData} from "@/types/ui"
+import Link from "next/link";
 
 export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     const [loading, setLoading] = useState(true)
@@ -160,6 +161,13 @@ export function NfcScanView({uuid, userRole}: NfcScanViewProps) {
     return (
         <div className="min-h-screen bg-muted/30 p-2 sm:p-4">
             <div className="mx-auto max-w-2xl space-y-4 px-2 sm:px-0">
+                <Link href="/">
+                    <Button variant="ghost" size="sm">
+                        <ArrowLeft className="mr-1 sm:mr-2 h-4 w-4"/>
+                        <span className="hidden xs:inline">Back to Dashboard</span>
+                        <span className="xs:hidden">Back</span>
+                    </Button>
+                </Link>
                 <Card>
                     <CardHeader className="px-4 sm:px-6">
                         <div className="flex items-start justify-between flex-wrap gap-2">
