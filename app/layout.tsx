@@ -6,6 +6,7 @@ import {ThemeProvider} from "@/components/theme-provider"
 import {ThemeToggle} from "@/components/ui/theme-toggle"
 import "./globals.css"
 import StatusBarWrapper from "@/components/android-status-bar";
+import NetworkWatcher from "@/components/network-watcher";
 
 export const metadata: Metadata = {
     title: "MUN NFC System",
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" suppressHydrationWarning>
         <body className="font-sans antialiased">
+        <NetworkWatcher />
         <StatusBarWrapper />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <SessionProvider>
